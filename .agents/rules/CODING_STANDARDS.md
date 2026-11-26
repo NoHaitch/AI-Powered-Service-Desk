@@ -15,10 +15,10 @@ Organize code around clear responsibilities. Use MVC or a similar layered struct
 
 ## TypeScript and frontend
 
-- Use Bun for Node ecosystem work, including dependency management, project scripts, and local verification. Include the Bun lockfile in changes that introduce JavaScript or TypeScript dependencies.
+- Use Bun for frontend dependency management, development, builds, and local verification. Include the Bun lockfile in changes that introduce JavaScript or TypeScript dependencies.
 
 - Enable strict TypeScript at initialization. Justify any use of `any`. Use PascalCase for React components and types, camelCase for functions, variables and hooks, and consistent filenames.
-- Use typed API contracts and validate untrusted data at runtime. Follow React and Next.js conventions, with client rendering and global state scoped to actual needs. Keep presentation, data fetching, state, and business logic independently understandable.
+- Use typed API contracts and validate untrusted data at runtime. Follow React and Vite conventions for a client-rendered TypeScript application. Keep presentation, data fetching, state, and business logic independently understandable.
 - Use semantic HTML, keyboard-accessible and responsive UI, and usable loading, error, and empty states. Keep server credentials on the server.
 - When initialized, use ESLint and a consistent formatter such as Prettier. Select the appropriate [testing layer](TESTING_STANDARDS.md).
 

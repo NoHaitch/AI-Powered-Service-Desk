@@ -9,7 +9,7 @@ Cover changed behavior and bug fixes with appropriate automated tests, including
 | API contract | HTTP behavior with pytest/HTTPX, including schemas, status codes, error shape, and authorization. |
 | Frontend component | User-visible states and accessibility with Vitest and React Testing Library. |
 | End-to-end | Critical role-based workflows in a browser with Playwright. |
-| Security | Negative authorization cases, upload validation, redaction, prompt injection resistance, and dependency checks using appropriate open-source tooling. |
+| Security | Boundary, negative authorization, hostile input, and failure-path tests, plus appropriate dependency or image checks. See the [security verification requirements](SECURITY_STANDARDS.md#security-verification). |
 | Regression | A focused test at the layer where a bug is reliably observable. |
 | Performance | Run a repeatable backend capacity test before release using k6 or equivalent. |
 | ML | Held-out evaluation, leakage-safe splits, baseline comparison, macro F1, per-class metrics, and calibration when displaying confidence. |
