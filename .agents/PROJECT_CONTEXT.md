@@ -65,17 +65,19 @@ Test priority matrix boundaries, authorized and unauthorized transitions, direct
 
 ### Scope boundaries
 
-Initial release: single fictional organization, role-based access, ticket lifecycle, L1/L2/L3 support queues, P1–P4 prioritization, escalation history and configurable SLA tracking, knowledge ingestion, hybrid RAG, one trained ML classifier, one controlled agent workflow, internal MCP server, automated tests and reproducible local deployment. Later: multi-tenant isolation, external GitHub MCP integration, additional providers, advanced reranking, richer analytics and public cloud deployment. Do not implement all stretch goals at once. Do not build a full ITSM suite, autonomous system administration, real password resets, or Kubernetes infrastructure for the initial release.
+The [roadmap](../docs/roadmap.md#release-targets) defines the agreed release sequence. The functional MVP serves one fictional organization with role-based access, ticket lifecycle, L1–L3 queues, P1–P4 prioritization, escalation history, configurable SLA tracking, basic knowledge management, automated tests, and reproducible local deployment. The AI-powered MVP follows with hybrid RAG, vector search, and LLM-backed grounded assistance. The advanced AI target retains a trained classifier, Dockerized inference, MCP, and controlled workflows for incremental delivery as prerequisites become ready. Hosted deployment remains optional. Later enhancements include multi-tenant isolation, external GitHub MCP integration, additional providers, advanced reranking, and richer analytics. A full ITSM suite, autonomous system administration, real password resets, and Kubernetes are outside the initial release.
 
 ## 3. Proposed technology stack
 
 | Layer | Preferred choice | Notes |
 | --- | --- | --- |
-| Web | Next.js, React, TypeScript | Tailwind CSS, shadcn/ui; accessible responsive UI |
+| Web | React, Vite, TypeScript, Bun | Same-origin HTTPS with the Vite development proxy and Nginx preferred for local release. Tailwind CSS and shadcn/ui remain candidates. |
 | Client data | TanStack Query | React Hook Form and Zod where useful |
 | API | Python, FastAPI, Pydantic | OpenAPI contracts, uv dependency management |
-| Auth | Firebase Authentication | Verify ID tokens server-side; emulator for local tests |
-| Application data | Cloud Firestore | Tickets, users, metadata, audit records; emulator locally |
+| Auth | Stateless JWT access verification and rotating opaque refresh cookies | [Accepted credential policy](../docs/decisions/0003-stateless-access-and-refresh-rotation.md). FastAPI owns authorization. |
+| Application data | PostgreSQL | Selected as the authoritative store for ticket, user, role, metadata, and audit records. |
+| Persistence integration | SQLAlchemy 2.x, Psycopg 3 async, and synchronous Alembic | [Accepted integration design](../docs/decisions/0004-postgresql-integration.md). Pydantic is the API validation boundary. |
+| Operational state and cache | Redis | M1 authentication rate limiting. Fail closed for login and refresh on limiter outage. Optional caching and revocation acceleration follow justified use cases. |
 | Document files | Local storage adapter initially | Optional cloud object storage after cost review |
 | Vector DB | Qdrant | Local Docker first; optional managed free cluster |
 | Embeddings | FastEmbed CPU-compatible model | Pin model/version and vector dimensions |
@@ -83,36 +85,19 @@ Initial release: single fictional organization, role-based access, ticket lifecy
 | Fusion | Reciprocal Rank Fusion (RRF) | Compare against sparse-only and dense-only baselines |
 | LLM | Gemini API initially | Provider interface; OpenAI/Anthropic adapters later |
 | AI framework | LangChain selectively | Use where it reduces integration complexity |
-| Workflow | LangGraph | Introduce after basic RAG works |
+| Workflow | Direct orchestration or optional LangGraph | Evaluate based on state, approval, and recovery requirements |
 | Tools | MCP Python SDK | Build internal server and client |
 | Classical ML | scikit-learn | TF-IDF + logistic regression, compare NB and linear SVM |
 | ML serving | Separate FastAPI Docker service | CPU only, versioned model artifact |
 | Experiments | MLflow locally (optional) | Record parameters, metrics and artifacts |
-| Observability | Structured logs, OpenTelemetry | Langfuse optional |
+| Observability | Structured logs and health signals | OpenTelemetry and self-hosted backends are [optional candidates](../docs/architecture/observability.md). |
 | Deployment | Docker Compose, manual releases | See the [Git and release workflow](../docs/git-and-releases.md). Hosted deployment remains optional. |
 
 These are proposed choices, not mandates to install every library immediately. Record material alternatives and tradeoffs in architecture decision records (ADRs). Pin dependencies and use current official documentation when implementing.
 
 ## 4. Architecture
 
-Use a modular monolith for application business logic, with separate ML inference and MCP service boundaries. Avoid unnecessary microservices.
-
-```mermaid
-flowchart TD
-    Web[Next.js web] --> API[FastAPI application]
-    API --> Auth[Firebase Auth]
-    API --> DB[Firestore]
-    API --> Files[Document storage]
-    API --> RAG[Hybrid RAG module]
-    RAG --> Q[Qdrant dense and sparse indexes]
-    RAG --> LLM[LLM provider API]
-    API --> ML[Docker ML inference service]
-    API --> Graph[LangGraph workflow]
-    Graph --> RAG
-    Graph --> MCP[MCP client]
-    MCP --> Tools[Internal MCP server]
-    Tools --> Domain[Authorized domain operations]
-```
+The [local-first architecture proposal](../docs/architecture/local-first.md) describes a frontend container, a modular Python/FastAPI backend container, and a persistent database container under Docker Compose. A separate self-hosted ML inference container follows in advanced AI milestones. Introduce vector search, reverse proxies, gateways, MCP, and orchestration when justified.
 
 Keep domain logic independent of transport and vendor SDKs where practical. The MCP server must reuse authorized domain operations rather than bypass business rules. Avoid circular service dependencies. Define service contracts before implementation. Use timeouts, bounded retries and clear error handling.
 
@@ -157,7 +142,7 @@ Internal MCP tools may include search_knowledge_base, get_ticket_details, find_s
 | Frontend unit/component | Vitest, React Testing Library |
 | Browser E2E | Playwright |
 | Backend unit/API | pytest, HTTPX |
-| Integration | Testcontainers, Firebase emulators, real local Qdrant |
+| Integration | Real local database or Testcontainers, plus a local vector database when retrieval ships |
 | ML | pytest, reproducible offline evaluation |
 | AI | Retrieval benchmarks, citation and workflow regression tests; optional Ragas |
 | Load | Pre-release backend capacity testing for sustained concurrent users and requests per second. See the [testing standards](rules/TESTING_STANDARDS.md#backend-capacity-testing). |
@@ -169,19 +154,13 @@ Mock paid/external LLM calls in routine verification. Real-provider evaluations 
 
 ## 10. Security and operational requirements
 
--   Server-side authorization for every protected operation; least privilege and deny by default.
--   Enforce document and ticket visibility before retrieval and tool execution.
--   Validate uploads, size limits, file types and text extraction; avoid executing uploaded content.
--   Treat LLM outputs and tool arguments as untrusted; validate structured schemas.
--   Rate limits, per-user quotas, bounded workflow execution and safe error responses.
--   No secrets in source, frontend bundles, logs or fixtures; commit only .env.example.
--   Structured audit events for sensitive actions, with redaction of secrets and personal data.
--   Health/readiness checks, request IDs, useful logs, timeouts and graceful degradation.
--   Document threat model, data flows and known limitations.
+Security by design, secure defaults, defense in depth, least privilege, and fail-closed behavior are mandatory. The [security standards](rules/SECURITY_STANDARDS.md) define controls and verification across application and infrastructure boundaries. Maintain health and readiness checks, request correlation, bounded execution, operational diagnostics, and a threat model that evolves with each milestone. The [M0 authentication and incident design](../docs/architecture/m0-authentication-design.md#threat-model-and-evaluation) tracks first-slice proposals and evidence to collect.
 
 ## 11. Cost and deployment
 
-Goal: zero mandatory spending during development. All required tools must be open source, free to use, or have an adequate free tier. Local Docker Compose is the reference deployment. Use Firebase emulators and local Qdrant; external LLM free quota is optional for deterministic development.
+[Observability](../docs/architecture/observability.md) is cross-cutting. Start with local logs, request correlation, and health signals. Add metrics and AI instrumentation as the relevant capabilities arrive. Centralized logs, tracing backends, and dashboards are optional. Durable business and security audits stay separate.
+
+Goal: zero mandatory spending. Docker Compose is the reference deployment, with locally hosted persistence and authentication and no required hosted accounts. Later AI features should keep local verification reproducible with an offline or mocked path. External provider calls and public hosting are optional.
 
 Potential hosted setup: Vercel Hobby for personal frontend, Firebase Auth/Firestore, Qdrant Cloud free cluster, and Cloud Run or another suitable container host for API/ML/MCP. These are candidates, not verified current entitlements. Check current quotas, billing requirements, regional eligibility, data-use terms and hard spending controls before enabling any cloud resource. Free allowances do not guarantee zero bills. Do not activate billing or paid resources without explicit developer approval.
 
@@ -211,14 +190,7 @@ This is a target layout; create directories as needed, not empty scaffolding for
 
 ## 13. Delivery milestones
 
-1.  Planning: clarify requirements, MVP acceptance criteria, architecture, data model, API contracts, threat model and cost constraints.
-2.  Foundation: repository conventions, local setup and reusable verification commands, authentication and a tested vertical slice.
-3.  Core product: tickets, roles, L1/L2/L3 queues, P1–P4 priority matrix, escalation and SLA tracking, knowledge document management and frontend workflows.
-4.  RAG: ingestion, sparse/dense retrieval, RRF, citations and baseline evaluation.
-5.  ML: dataset, training, evaluation, containerized inference and ticket routing.
-6.  Agents/MCP: stateful resolution workflow, read tools, approval-gated writes and audit logs.
-7.  Hardening: integration/E2E, AI evaluations, security, observability, and a reproducible backend capacity test before release.
-8.  Release: reproducible demo, deployment if feasible, documentation and portfolio walkthrough.
+See the [project roadmap](../docs/roadmap.md) for milestones, sequencing, release gates, and open decisions. Evaluate LangChain and LangGraph against actual requirements before adopting either framework. The technical sections describe candidate designs and quality requirements for the capabilities in each release target.
 
 Each milestone must have acceptance criteria, tests and documented limitations. Prefer small end-to-end slices over generating all layers in isolation.
 
