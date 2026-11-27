@@ -8,3 +8,4 @@
 - Explain unfamiliar AI engineering concepts when introduced. Tie technology choices to a project need and discuss meaningful alternatives and trade-offs. Prefer LangChain and LangGraph when technically justified.
 - Exercise judgment on routine implementation details. Discuss consequential architecture, security, API contracts, cost, and irreversible decisions.
 - Use technically precise, proportionate communication. Label proposals, assumptions, verified behavior, and unresolved questions clearly.
+- For authorized GitHub promotions, split work into focused Conventional Commits, push a feature branch, merge and push `dev`, then merge and push `main`. Follow the [GitHub promotion workflow](../../docs/git-and-releases.md#publish-and-promote-a-feature-on-github).
