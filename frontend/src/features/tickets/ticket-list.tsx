@@ -6,12 +6,13 @@ import { Badge } from '@/shared/components/ui/badge'
 import { Button } from '@/shared/components/ui/button'
 import { Card, CardContent } from '@/shared/components/ui/card'
 import { Checkbox } from '@/shared/components/ui/checkbox'
+import { DeskSelect } from '@/shared/components/ui/desk-select'
 import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/components/ui/table'
 import { personaName, previewIntake, ticketStatuses, type PreviewTicket } from './ticket-preview'
 
-const pageSize = 6
+const pageSizes = [10, 20, 50, 100] as const
 const shortDate = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' })
 
 export function TicketList({ tickets, mode }: { tickets: PreviewTicket[]; mode: 'employee' | 'queue' | 'all' | 'assigned' }) {
@@ -24,6 +25,7 @@ export function TicketList({ tickets, mode }: { tickets: PreviewTicket[]; mode: 
   const [sort, setSort] = useState('newest')
   const [flagged, setFlagged] = useState(false)
   const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState<number>(pageSizes[0])
   const needle = query.trim().toLowerCase()
   const candidates = queue ? previewIntake(tickets, flagged) : tickets
   const results = candidates.filter((incident) =>
@@ -80,32 +82,32 @@ export function TicketList({ tickets, mode }: { tickets: PreviewTicket[]; mode: 
             ) : (
               <>
                 <label className="filter-label">Status
-                  <select value={status} onChange={(event) => { setStatus(event.target.value); setPage(1) }} className="desk-select">
+                  <DeskSelect value={status} onChange={(event) => { setStatus(event.target.value); setPage(1) }}>
                     <option value="all">All statuses</option>
                     {Object.entries(ticketStatuses).filter(([key]) => mode === 'employee' || key !== 'submitted')
                       .map(([key, label]) => <option key={key} value={key}>{label}</option>)}
-                  </select>
+                  </DeskSelect>
                 </label>
                 <label className="filter-label">Priority
-                  <select value={priority} onChange={(event) => { setPriority(event.target.value); setPage(1) }} className="desk-select">
+                  <DeskSelect value={priority} onChange={(event) => { setPriority(event.target.value); setPage(1) }}>
                     <option value="all">All priorities</option><option value="pending">Pending triage</option>
                     <option>P1</option><option>P2</option><option>P3</option><option>P4</option>
-                  </select>
+                  </DeskSelect>
                 </label>
                 {mode === 'employee' && <label className="filter-label">Type
-                  <select value={kind} onChange={(event) => { setKind(event.target.value); setPage(1) }} className="desk-select">
+                  <DeskSelect value={kind} onChange={(event) => { setKind(event.target.value); setPage(1) }}>
                     <option value="all">All types</option><option value="incident">Incidents</option><option value="request">Service requests</option>
-                  </select>
+                  </DeskSelect>
                 </label>}
                 {mode === 'all' && <label className="filter-label">Assignment
-                  <select value={assignment} onChange={(event) => { setAssignment(event.target.value); setPage(1) }} className="desk-select">
+                  <DeskSelect value={assignment} onChange={(event) => { setAssignment(event.target.value); setPage(1) }}>
                     <option value="all">Any assignment</option><option value="assigned">Assigned</option><option value="unassigned">Unassigned</option>
-                  </select>
+                  </DeskSelect>
                 </label>}
                 <label className="filter-label">Sort
-                  <select value={sort} onChange={(event) => { setSort(event.target.value); setPage(1) }} className="desk-select">
+                  <DeskSelect value={sort} onChange={(event) => { setSort(event.target.value); setPage(1) }}>
                     <option value="newest">Newest first</option><option value="oldest">Oldest first</option>
-                  </select>
+                  </DeskSelect>
                 </label>
               </>
             )}
@@ -153,7 +155,21 @@ export function TicketList({ tickets, mode }: { tickets: PreviewTicket[]; mode: 
             </TableBody>
           </Table></div>
           <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
-            <p className="text-muted-foreground" aria-live="polite">{results.length} {results.length === 1 ? 'ticket' : 'tickets'}</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <label className="flex items-center gap-2">
+                Rows per page
+                <DeskSelect value={pageSize} onChange={(event) => {
+                  setPageSize(Number(event.target.value))
+                  setPage(1)
+                }}>
+                  {pageSizes.map((size) => <option key={size} value={size}>{size}</option>)}
+                </DeskSelect>
+              </label>
+              <p className="text-muted-foreground" aria-live="polite">
+                {rows.length > 0 && `Showing ${(currentPage - 1) * pageSize + 1}–${(currentPage - 1) * pageSize + rows.length} of `}
+                {results.length} {results.length === 1 ? 'ticket' : 'tickets'}
+              </p>
+            </div>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" disabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)}>Previous</Button>
               <span className="whitespace-nowrap text-xs text-muted-foreground">Page {currentPage} of {pages}</span>

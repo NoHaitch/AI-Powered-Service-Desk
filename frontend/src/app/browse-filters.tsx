@@ -1,5 +1,6 @@
 import { RiSearchLine } from '@remixicon/react'
 
+import { DeskSelect } from '@/shared/components/ui/desk-select'
 import { Input } from '@/shared/components/ui/input'
 
 export function BrowseFilters({ query, category, categories, onQuery, onCategory }: {
@@ -18,10 +19,10 @@ export function BrowseFilters({ query, category, categories, onQuery, onCategory
         </span>
       </label>
       <label className="filter-label">Category
-        <select className="desk-select" value={category} onChange={(event) => onCategory(event.target.value)}>
+        <DeskSelect value={category} onChange={(event) => onCategory(event.target.value)}>
           <option value="">All categories</option>
           {categories.map((value) => <option key={value}>{value}</option>)}
-        </select>
+        </DeskSelect>
       </label>
     </div>
   )
