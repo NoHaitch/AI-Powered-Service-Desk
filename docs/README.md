@@ -1,6 +1,6 @@
 # Project documentation
 
-M0 product planning is complete and the M1 frontend foundation is in progress. The [project README](../README.md) describes the application and its current scope. The [frontend guide](../frontend/README.md) covers the Vite, Tailwind CSS, and shadcn/ui setup.
+M0 product planning is complete and M1 is active. The [project README](../README.md) summarizes current scope. See the [frontend guide](../frontend/README.md) for fixture setup and the [backend guide](../backend/README.md) for FastAPI, Swagger, and verification.
 
 See the [Git and release workflow](git-and-releases.md) for branch roles, the local merge gate, and manual releases.
 
@@ -8,9 +8,11 @@ See the [project roadmap](roadmap.md) for milestone status, the prioritized feat
 
 See the [accepted incident intake and L1 triage requirements](requirements/incident-intake-and-triage.md) for the first slice.
 
-See the [local-first architecture proposal](architecture/local-first.md) for Docker Compose service boundaries, the database and cache decision, and open authentication and communication choices.
+See the [local-first architecture](architecture/local-first.md) for Compose setup, HTTPS routing, and datastore boundaries.
 
 See the [frontend decision](decisions/0002-react-vite-and-bun.md) for the selected UI stack and release build direction.
+
+See the [frontend experience guide](architecture/frontend-experience.md) for the sitemap, layouts, roles, fixture flows, and implementation priorities.
 
 See the [PostgreSQL integration design](architecture/postgresql-integration.md) for the selected driver, sessions, and migration verification.
 

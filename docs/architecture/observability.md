@@ -11,6 +11,8 @@ The seven-day implementation target prioritizes a diagnosable local application.
 
 Local operational logs go to container stdout and are viewable through Compose. Persistent business and security audit records remain application data governed by their own integrity, access, and retention policies. A correlation ID can connect a diagnostic event to an audit event without duplicating its payload.
 
+The [backend foundation](../../backend/README.md#api-and-persistence) emits JSON request and dependency events with server-generated IDs. Liveness is independent of storage. PostgreSQL readiness and Redis connectivity have separate bounded probes, so degraded Redis connectivity can be detected without marking unrelated routes unavailable. The Redis probe verifies connectivity only. The auth slice will add limiter write and recovery verification.
+
 ## Self-hosted candidates
 
 | Candidate | Role | Dependency or trigger |

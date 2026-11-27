@@ -1,0 +1,11 @@
+.venv
+**/__pycache__
+.*_cache
+.env*
+tests
+README.md
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx

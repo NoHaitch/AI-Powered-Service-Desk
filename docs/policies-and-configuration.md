@@ -9,6 +9,8 @@ Use this page as the index for policies across the backend, frontend, and suppor
 | Authentication safeguards | Live checks on sensitive operations and five-minute single-use reauthentication for credential or privilege changes | Accepted in the [authentication decision](decisions/0003-stateless-access-and-refresh-rotation.md). |
 | Redis controls | M1 login and refresh throttling, account-wide alert, counter expiry, and configurable recovery with `503` on unavailability | Accepted [initial limiter defaults](architecture/m0-authentication-design.md#configurable-limiter-defaults). |
 | Login and record lifecycle | Normalized local usernames, configurable 90-day auth and security audit retention, incident history retention, restricted deletion, and revocation triggers | [Accepted in M0](architecture/m0-authentication-design.md#login-and-record-lifecycle-policy). |
+| Backend foundation | Database and Redis connection bounds, probe timeout, structured logging, and Swagger access | Implemented [backend settings](../backend/README.md#backend-configuration). Revisit budgets after load measurements. |
+| Local infrastructure | Loopback HTTPS port, local certificate and secret provisioning, private datastore topology and Redis persistence | [Compose configuration](architecture/local-first.md#run-the-local-stack). Runtime verification is pending on a Docker-enabled host. |
 
 ## Recording a policy or setting
 

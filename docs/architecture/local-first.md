@@ -2,7 +2,7 @@
 
 **Status:** Docker Compose, PostgreSQL, Redis, and same-origin HTTPS are accepted. The reference deployment must run without paid infrastructure or hosted accounts. Public hosting is optional.
 
-## Proposed service boundaries
+## Service boundaries
 
 | Tier | Responsibility | Communication |
 | --- | --- | --- |
@@ -12,9 +12,31 @@
 | Redis container | M1 authentication rate limiting. Caching and optional revocation acceleration are deferred until justified. | Private to FastAPI on the Compose network. Limiter outage blocks login and refresh while unaffected routes remain available. PostgreSQL remains authoritative. |
 | Independent ML inference container (later) | Self-host a versioned classifier and return advisory predictions. | An internal HTTP call from FastAPI with a timeout and manual fallback. The inference service does not need direct access to the application database. |
 
-Bind the HTTPS browser entry point to loopback and keep the API, database, cache, and inference ports private in the reference topology. Route API requests before any SPA fallback. Trust forwarding headers only from the configured proxy. Local certificate provisioning and Compose routing details belong to M1. Add a dedicated gateway, vector search, MCP, and orchestration only when their roadmap prerequisites are met. See the [frontend decision](../decisions/0002-react-vite-and-bun.md).
+The Compose configuration publishes only the frontend HTTPS port on loopback. The frontend and backend share the edge network. PostgreSQL and Redis connect only to the internal data network shared with the backend and the one-shot migration service. Vite and Nginx forward `/api` before the SPA fallback. This foundation ignores forwarded identity headers. Configure an explicit proxy trust boundary alongside the authentication/IP policy when implementing auth. See the [frontend decision](../decisions/0002-react-vite-and-bun.md).
 
 The [repository structure standard](../../.agents/rules/REPOSITORY_STRUCTURE.md) defines where these deployables, their configuration, and their tests live.
+
+## Run the local stack
+
+Use a Docker engine in Linux container mode with BuildKit and Compose 2.24.4 or newer, Python 3.14, and [mkcert](https://github.com/FiloSottile/mkcert). Build downloads require access to the image registries and lockfile package sources. The running application and Swagger assets are local.
+
+From the repository root, register the mkcert development CA on your own workstation and generate the ignored `.local/` files. The setup helper preserves existing credentials. Store the directory in the private checkout and keep its files out of source control. The file mounts grant only the relevant containers access.
+
+```sh
+mkcert -install
+python scripts/setup_local.py
+docker compose -f compose.yaml -f compose.dev.yaml up --build --wait
+docker compose --profile tools run --rm migrate
+python scripts/check_local.py --swagger
+```
+
+Open `https://localhost:8443` for the existing frontend preview and `https://localhost:8443/api/docs` for Swagger. Vite watches frontend source files. Use the base `docker compose up --build --wait` command for the optimized Nginx runtime and `python scripts/check_local.py` for its default docs-off mode. Stop the running configuration before switching modes. `DESK_HTTPS_PORT` changes the loopback host port, and `DESK_SWAGGER_ENABLED` overrides the docs setting. See [backend configuration](../../backend/README.md#backend-configuration) for API settings.
+
+Inspect startup and persistence using `docker compose ps` and `docker compose --profile tools run --rm migrate alembic current`. Stop and recreate the PostgreSQL container, then check that the migration revision remains. The `postgres_data` named volume holds durable data. Bootstrap scripts run only on first initialization. Preserve the matching database secrets when preserving the volume. Redis is bounded, non-evicting, and ephemeral in this slice. Its ACL permits `PING` only until the auth limiter defines its required commands and verifies restart recovery.
+
+For a local backup, run `docker compose exec -T postgres pg_dump -U postgres -d service_desk -Fc -f /tmp/service-desk.dump` and copy the dump to protected local storage with `docker compose cp postgres:/tmp/service-desk.dump .local/service-desk.dump`. To exercise restore on the same local cluster, create a scratch database and run `pg_restore` against it as the PostgreSQL administrator. Verify the revision and records there before considering a real restore. Follow the [database standards](../../.agents/rules/DATABASE_STANDARDS.md) for access and backup handling.
+
+Container builds, Docker networking, Redis ACL startup, and named volume persistence still need a Docker-enabled verification run. Native testing verified PostgreSQL 17.12 readiness, runtime DDL denial, and repeatable migration. Native HTTPS proxy testing verified routing, Swagger, and safe unavailable responses.
 
 ## Persistence and caching
 

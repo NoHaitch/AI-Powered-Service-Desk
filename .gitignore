@@ -1,5 +1,13 @@
 /.agents/local/
 /.agents/scratch/
+/.local-tools/
+/.local/
+
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
 
 .env
 .env.*

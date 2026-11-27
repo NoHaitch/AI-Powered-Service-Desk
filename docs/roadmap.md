@@ -40,14 +40,15 @@ Hosted deployment remains optional (M6).
 - [x] Approve the [PostgreSQL integration](decisions/0004-postgresql-integration.md), session architecture, UUIDs, schema invariants, and transaction boundaries.
 - [x] Approve [login normalization, audit retention, restricted deletion, and revocation triggers](architecture/m0-authentication-design.md#login-and-record-lifecycle-policy).
 
-**Completion gate met.** The first-slice requirements and policy decisions are approved, and the linked contracts, threat model, and verification plan reflect them. M1 awaits separate authorization to scaffold.
+**Completion gate met.** The first-slice requirements and policy decisions are approved, and the linked contracts, threat model, and verification plan reflect them.
 
 ## M1 Application foundation
 
 - [x] Initialize the [frontend](../frontend/README.md) with React, Vite, Tailwind CSS, and shared shadcn/ui primitives.
+- [x] Build the [frontend fixture slice](architecture/frontend-experience.md) with public, employee, and workspace layouts, preview sign-in, incident submission, tracking, and L1 triage.
 
-- [ ] Establish the React/Vite frontend, FastAPI, and PostgreSQL containers using Docker Compose, with safe configuration examples and reusable local checks. Use Bun for frontend tooling and distinguish development targets from release images.
-- [ ] Implement the [observability foundations](architecture/observability.md) with the first API slice and Compose services. Verify structured logs, correlation, redaction, liveness, and readiness without a collector.
+- [x] Implement the [FastAPI foundation](../backend/README.md) with locked dependencies, migrations, database and cache clients, health endpoints, correlated logs, and same-origin Swagger. Verify native API checks and degraded behavior.
+- [ ] Run the [Compose verification](architecture/local-first.md#run-the-local-stack) on a Docker-enabled host. Build both frontend targets and the API, verify the datastore probes, and confirm volume persistence. Compose rendering, native PostgreSQL migrations and restricted roles, and native HTTPS proxy checks passed.
 - [ ] Provide a documented [database seed command](architecture/local-first.md#demo-data-seeding) that runs after migrations and populates local PostgreSQL with synthetic users and incidents for the intake and triage demo. Verify that a fresh database can be seeded and a second run creates no duplicates.
 - [ ] Implement sign-in, refresh, logout, and server-side authorization for seeded roles. Introduce private Redis rate limiting with the first login and refresh flow. Verify limits, concurrency, expiry, and recovery, plus fail-closed `503` responses and unaffected routes. Add auth and limiter logs, audit events, health signals, and bounded metrics without requiring an observability stack.
 - [ ] Deliver one tested vertical slice where an employee submits and views their own incident, L1 filters the queue and triages the incident, and each successful change produces an audit event. Verify the browser flow and negative cases against the M0 evaluation plan.
@@ -58,6 +59,8 @@ Hosted deployment remains optional (M6).
 
 Agree on the remaining lifecycle, escalation, priority overrides, and SLA policies before implementing those behaviors.
 
+Frontend preview evidence is available for catalog intake, employee tracking, ticket conversations, staff notes, assignments and resolution views, and profile preferences. See [pending workflow decisions](architecture/frontend-experience.md#workflow-decisions-pending). M2 delivery is tracked by the full-stack checklist below.
+
 - [ ] Support incidents and service requests, including assignment, pending work, resolution, closure, and reopening with history.
 - [ ] Add role and user administration, L1–L3 queues and routing, escalation, direct specialist routing, reassignment and de-escalation, with reasons and preserved handoff history.
 - [ ] Calculate P1–P4 priority from an impact and urgency matrix, independent of support tier. Record authorized overrides and reasons.
@@ -67,6 +70,8 @@ Agree on the remaining lifecycle, escalation, priority overrides, and SLA polici
 **Completion gate.** Seeded scenarios cover all tiers and priorities. Tests cover authorization, valid and invalid transitions, SLA boundaries, escalation, and concurrent updates. Support staff can complete the flow manually.
 
 ## M3 Knowledge and grounded assistance
+
+The [frontend preview](architecture/frontend-experience.md) includes searchable synthetic articles and administrator drafts. Publishing, access management, and ingestion remain part of M3.
 
 - [ ] **Functional MVP.** Let administrators upload, version, and manage access to PDF, Markdown, and plain-text knowledge documents. Track source metadata and ingestion status. Verify safe parsing, repeatable ingestion, and replacement and deletion behavior.
 - [ ] **AI-powered MVP.** Compare keyword, vector-based semantic, and hybrid retrieval using a reviewed dataset and identical access rules. Evaluate fusion against the baselines and record relevance and latency results.
@@ -112,6 +117,7 @@ Agree on the remaining lifecycle, escalation, priority overrides, and SLA polici
 
 | Decision | Proposal or open choice | Needed by |
 | --- | --- | --- |
+| Auth proxy trust | Select the trusted proxy identity or subnet and client IP extraction rules for rate limiting. The current API ignores forwarding headers. | M1 authentication |
 | Service desk expansion | Agree on lifecycle transitions beyond triage, escalation, priority overrides, and SLA timing. | M2 |
 | Retrieval and generation | Decide the indexing approach, embedding model, provider, fusion strategy, and evaluation thresholds after representative data and baseline results are available. | M3 |
 | AI tooling and datasets | Select the classifier taxonomy, dataset, inference boundary, LangChain or LangGraph use, and MCP tool scope only when justified. | M4 |

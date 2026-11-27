@@ -34,11 +34,13 @@
 
 ## About
 
-AI-Powered Service Desk is a local-first IT service management application in planning. It is designed to give employees one place to report disruptions and request help, and give support teams a shared queue for triage, escalation, and resolution. A central knowledge base will help staff find relevant guidance, while later AI features will surface evidence and cite sources during troubleshooting.
+AI-Powered Service Desk is a local-first IT service management application in development. It gives employees one place to report disruptions and request help and gives support teams a shared queue for triage, escalation, and resolution. A knowledge base supports troubleshooting, and planned AI features will retrieve evidence and cite sources.
 
 ## Features
 
-**Current status:** The frontend foundation can run locally and includes a UI component preview. The service desk workflows below are planned.
+**Current status:** The local frontend preview covers incident submission, L1 triage, catalog requests, ticket conversations, seeded assignments and resolutions, and synthetic knowledge articles and drafts. Live authentication and full-stack service desk workflows remain planned.
+
+The backend foundation includes health endpoints, local Swagger UI, PostgreSQL and Redis clients, and Alembic migration tooling. Native PostgreSQL verification passed. Container builds and live Redis verification are pending.
 
 | Release target | Planned capabilities |
 | --- | --- |
@@ -48,17 +50,17 @@ AI-Powered Service Desk is a local-first IT service management application in pl
 
 ## System architecture
 
-Docker Compose is the agreed deployment baseline. The proposed local topology pairs a browser-facing frontend container with a modular FastAPI backend and a persistent database. The backend owns authorization, business rules, and database access.
+The local Compose topology pairs a browser-facing frontend with a modular FastAPI backend and private PostgreSQL and Redis services. FastAPI is the boundary for future authorization and business rules.
 
 ```mermaid
 flowchart LR
     Browser --> Frontend[Frontend container]
     Frontend --> API[FastAPI container]
     API --> DB[(PostgreSQL container)]
-    API -.-> Redis[(Redis)]
+    API --> Redis[(Redis container)]
 ```
 
-The planned browser entry point uses same-origin HTTPS, with Vite proxying in development and Nginx preferred for local releases. Redis is planned for authentication rate limiting, with optional caching later. Independent ML inference, vector search, and tool integration are planned for later milestones. [Local architecture](docs/architecture/local-first.md)
+The browser entry point uses same-origin HTTPS, with Vite proxying in development and Nginx serving optimized builds. Redis connectivity is in place for the planned authentication rate limiter. Independent ML inference, vector search, and tool integration are planned for later milestones. [Local architecture](docs/architecture/local-first.md)
 
 ## Technology stack
 
@@ -66,35 +68,37 @@ The planned browser entry point uses same-origin HTTPS, with Vite proxying in de
 | --- | --- |
 | Local deployment | Docker Compose, with zero mandatory infrastructure costs. Public hosting is optional. |
 | Frontend | React, Vite, and TypeScript with Tailwind CSS through its Vite plugin and shadcn/ui components. Bun manages dependencies and runs development and build scripts. |
-| Backend | Python and FastAPI. SQLAlchemy 2.x with Psycopg 3 async, Alembic migrations, and Pydantic validation. |
+| Backend | Python 3.14 with uv, FastAPI and Swagger, SQLAlchemy 2.x with Psycopg 3 async, Alembic migrations, and Pydantic validation. |
 | Persistence and operational state | PostgreSQL for durable data. Redis for planned rate limiting and caching. |
 | Identity | Stateless JWT access verification and rotating opaque refresh cookies. |
 | AI and ML | Planned hybrid retrieval, LLM integration, and containerized inference. Model providers and orchestration tools are selected as requirements become clear. |
 
 ## Getting started
 
-Initial product planning is complete. See the [frontend guide](frontend/README.md) to run the UI locally. Full-stack setup is pending.
+The [frontend guide](frontend/README.md) covers the standalone fixture preview. The [local stack guide](docs/architecture/local-first.md#run-the-local-stack) documents Compose and its remaining verification.
 
 | Step | Current status |
 | --- | --- |
-| Prerequisites | Bun for frontend development. Docker Compose is planned for the full local stack. |
-| Installation | Install frontend dependencies from the Bun lockfile. See the [frontend guide](frontend/README.md). |
-| Environment configuration | The frontend component preview requires no environment variables. Full-stack configuration is pending. |
-| Running the application | Start the local Vite development server described in the [frontend guide](frontend/README.md). |
+| Prerequisites | Bun for the standalone frontend. Python, Docker Compose, and mkcert for the reference stack. |
+| Installation | Use the Bun and uv lockfiles for native development. Compose builds the prepared images. |
+| Environment configuration | Standalone frontend fixtures require no environment variables. Compose uses local secret files and a loopback TLS certificate. |
+| Running the application | Run the [standalone frontend](frontend/README.md) or follow the [local Compose instructions](docs/architecture/local-first.md#run-the-local-stack). |
 
 ## Usage
 
-The first planned workflow lets a signed-in employee submit an incident and track it while L1 support assesses its impact and urgency. See the [accepted intake and triage requirements](docs/requirements/incident-intake-and-triage.md).
+In the frontend preview, select an employee persona to submit and track a synthetic incident or request. Switch to an L1 agent in the same tab to review the incident and try triage. Use the [preview walkthrough](docs/architecture/frontend-experience.md#navigation-integration-and-user-flows) for conversations, knowledge drafts, and account preferences.
 
 ## Testing and verification
 
-The frontend has lint and build checks, including TypeScript compilation. See the [frontend verification commands](frontend/README.md#verification). Full-stack tests will cover domain rules, API access boundaries, end-to-end workflows, and backend capacity. The [Git and release workflow](docs/git-and-releases.md#local-merge-gate) describes the local checks required before merging to `main`.
+The frontend has lint, TypeScript, build, and fixture-model tests. The backend has Ruff, mypy, and pytest checks for the health and error contracts. See the local stack guide for remaining container verification. [Frontend checks](frontend/README.md#verification) · [Backend checks](backend/README.md#local-checks) · [Local merge gate](docs/git-and-releases.md#local-merge-gate)
 
 ## Project structure
 
 | Path | Contents |
 | --- | --- |
 | [Frontend](frontend/README.md) | Vite application, Tailwind theme, and shared shadcn/ui components. |
+| [Backend](backend/README.md) | FastAPI, database sessions, Alembic migrations, and API tests. |
+| [Local infrastructure](docs/architecture/local-first.md) | Compose, Nginx, and PostgreSQL role bootstrap. |
 | [Documentation](docs/README.md) | Roadmap, requirements, architecture proposals, and release workflow. |
 | [Repository instructions](AGENTS.md) | Development and verification conventions. |
 | [Agent workflow](.agents/README.md) | Project context, engineering standards, and reusable skills. |
@@ -104,7 +108,7 @@ The frontend has lint and build checks, including TypeScript compilation. See th
 - [Documentation index](docs/README.md)
 - [Project roadmap and release targets](docs/roadmap.md)
 - [Incident submission and L1 triage requirements](docs/requirements/incident-intake-and-triage.md)
-- [Local-first architecture proposal](docs/architecture/local-first.md)
+- [Local-first architecture and setup](docs/architecture/local-first.md)
 - [Application policies and configuration](docs/policies-and-configuration.md)
 - [Git and release workflow](docs/git-and-releases.md)
 
