@@ -26,9 +26,11 @@ From the repository root, register the mkcert development CA on your own worksta
 mkcert -install
 python scripts/setup_local.py
 docker compose -f compose.yaml -f compose.dev.yaml up --build --wait
-docker compose --profile tools run --rm migrate
+docker compose --profile tools run --rm --build migrate
 python scripts/check_local.py --swagger
 ```
+
+For an existing PostgreSQL volume, apply the [maintenance-role bootstrap](database-schema.md#migration-and-local-seed-workflow) before running the migration command.
 
 Open `https://localhost:8443` for the existing frontend preview and `https://localhost:8443/api/docs` for Swagger. Vite watches frontend source files. Use the base `docker compose up --build --wait` command for the optimized Nginx runtime and `python scripts/check_local.py` for its default docs-off mode. Stop the running configuration before switching modes. `DESK_HTTPS_PORT` changes the loopback host port, and `DESK_SWAGGER_ENABLED` overrides the docs setting. See [backend configuration](../../backend/README.md#backend-configuration) for API settings.
 
@@ -41,7 +43,7 @@ For a local backup, run `docker compose exec -T postgres pg_dump -U postgres -d 
 - PostgreSQL 17.12 and Redis 8.8.0 started with `docker compose up -d --wait --wait-timeout 120 postgres redis`. Both reported healthy. A TCP `SELECT 1` using the PostgreSQL runtime role returned `1`, and an authenticated Redis `PING` using the restricted ACL user returned `PONG`. Neither service published a host port.
 - The Vite development and Nginx runtime frontend images built and started successfully. Host HTTPS checks reached the SPA deep link at `https://localhost:8443/portal/tickets` through the Compose loopback port mapping. Nginx returned HTTP `503` for an API request while the backend was stopped.
 - Chromium exercised the same flow on both frontend targets through the forwarded port, covering visitor denial, blank-field validation, prompt-review intake, cross-owner denial, L1 triage, and the updated requester detail. The final frontend passed ESLint, the TypeScript and Vite build, and all 12 Bun tests. The browser flow used synthetic personas and tab storage.
-- Native testing previously verified PostgreSQL readiness, runtime DDL denial, repeatable migration, HTTPS proxying, and Swagger. The backend image built and passed the release HTTPS smoke check through Nginx, including API liveness, PostgreSQL readiness, Redis, SPA routing, and the docs-off setting. PostgreSQL persistence after container recreation remains pending. The latest container checks skipped migrations and schema inspection.
+- Native testing previously verified PostgreSQL readiness, runtime DDL denial, repeatable migration, HTTPS proxying, and Swagger. The backend image built and passed the release HTTPS smoke check through Nginx, including API liveness, PostgreSQL readiness, Redis, SPA routing, and the docs-off setting. PostgreSQL persistence after container recreation remains pending. The [M1 schema verification](database-schema.md#verification) exercises migrations separately on disposable PostgreSQL instances.
 
 ## Persistence and caching
 
@@ -56,9 +58,7 @@ The [PostgreSQL integration design](postgresql-integration.md) covers the accept
 
 ## Demo data seeding
 
-Provide an explicit local seed command to run after schema migrations. Migrations establish the schema. The seed command populates it with reproducible synthetic data for development and demos. Start with employee and L1 accounts, an intake queue, and incidents in the states supported by the first slice. Extend the scenarios as the application gains service requests, support tiers, SLA tracking, and knowledge management.
-
-Make reruns safe by using stable seed identifiers and preserving existing edits. Document which database the command targets and have it reject production environments. Verify the command on a clean local database and run it twice to check for duplicates.
+Run the [opt-in local seed command](database-schema.md#migration-and-local-seed-workflow) after migrations. It populates a marked development database with the synthetic frontend personas, an L1 queue, and new and triaged incidents. The command uses privately supplied passwords and preserves existing fixture edits on reruns.
 
 ## Authentication and data policy
 
@@ -73,3 +73,5 @@ The default Compose stack includes application observability foundations. The op
 - [PostgreSQL transactions](https://www.postgresql.org/docs/current/tutorial-transactions.html)
 - [Firebase Local Emulator Suite](https://firebase.google.com/docs/emulator-suite)
 - [Docker Compose networking](https://docs.docker.com/compose/how-tos/networking/)
+
+The backend mounts a private `attachment_data` named volume. See the [content storage architecture](content-storage.md#attachment-foundation) for quotas, lifecycle, and coordinated database and file backup.

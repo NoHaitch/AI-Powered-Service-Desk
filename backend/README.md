@@ -1,6 +1,6 @@
 # FastAPI backend
 
-The M1 foundation exposes health checks, local Swagger UI, and a PostgreSQL migration baseline. Application authentication, user and incident schemas, and endpoints remain pending. The React preview still uses synthetic data.
+The M1 foundation exposes health checks, local Swagger UI, and a PostgreSQL schema for identity, refresh lineage, incidents, and audits. Application authentication and ticket endpoints remain pending. The React preview still uses synthetic data.
 
 ## Local checks
 
@@ -38,7 +38,7 @@ Liveness and dependency error responses work without connected stores. Swagger i
 
 Successful health responses have `{"status":"ok"}`. Dependency failures return `503`. Errors have `code`, `message`, and `request_id`. The same server-generated ID appears in `X-Request-ID` and operational logs. JSON logs include the service, event, outcome, and applicable route template, status, duration, and safe error class. They omit actual URLs, headers, cookies, query values, and raw exceptions.
 
-Run Alembic as a separate operation with the migration role. The baseline initializes Alembic history in the `desk` schema. The runtime login has schema usage and no schema creation permission. Future revisions grant table access explicitly and remain responsible for their own rollback and migration tests.
+Run Alembic as a separate operation with the migration role. The baseline initializes Alembic history in the `desk` schema. The runtime login has schema usage and no schema creation permission. Revision `0002_m1_schema` adds the domain tables and narrow grants. See the [migration and seed workflow](../docs/architecture/database-schema.md#migration-and-local-seed-workflow) for preparing existing databases, seeding synthetic data, and running the isolated PostgreSQL suite.
 
 ## Backend configuration
 
@@ -55,3 +55,5 @@ All values use the `DESK_` prefix. Invalid types, empty required secrets, and va
 | `SWAGGER_ENABLED`, `SWAGGER_ASSETS` | `false`, `/app/swagger`. The development Compose override enables Swagger unless explicitly disabled. |
 
 Revisit pool and probe budgets after representative measurements. The [PostgreSQL design](../docs/architecture/postgresql-integration.md) records the accepted transaction boundaries.
+
+Revision `0003_private_attachments` adds the [local storage foundation](../docs/architecture/content-storage.md). The provider is testable independently of the HTTP layer. Attachment routes remain gated on live authorization.

@@ -78,9 +78,15 @@ Login accepts `username` and `password`. The safe user summary exposes the user 
 
 Return `401` for absent or invalid credentials, `403` for CSRF or a denied role, `404` for out-of-scope resources, `409` for stale or invalid transitions, and `422` for invalid input. Return `429` for an enforced limit with a coarse `Retry-After` and `503` for limiter outage or recovery, before issuing tokens. The client honors backoff and does not loop or clear a usable session solely because login or refresh is temporarily unavailable. An unavailable authoritative store fails closed. The UI may coordinate a refresh after access expiry and must avoid blindly repeating mutations with unknown outcomes.
 
+### Attachment API extension under review
+
+Preserve JSON incident creation without attachments. A future optional list of staged attachment IDs can be claimed atomically when creating an incident. Existing-ticket uploads will use the same staged-object primitives and require a separately authorized parent mutation. Listing and download must check current access to the ticket and use the out-of-scope `404` rule. All attachment mutations require validated Origin and CSRF. Responses never expose filesystem paths, object keys or private digests. Download uses an explicit attachment disposition, safe filename, no-sniff, and private no-store. No attachment routes are registered yet.
+
+For the threat model, consider unauthorized object claims and cross-ticket disclosure, parser attacks and content spoofing, traversal, malformed filenames, disk exhaustion, interrupted writes, and tampered restored files. Keep uploads bounded, verify decoded content and file integrity, and audit lifecycle state changes. API-level denial, CSRF, and HTTP response tests are due when those routes ship. [Attachment controls and limits](content-storage.md#attachment-foundation)
+
 ## PostgreSQL data contract
 
-Apply the [database standards](../../.agents/rules/DATABASE_STANDARDS.md) and the accepted [session and migration design](postgresql-integration.md). Ordinary stateless JWT verification remains outside the database session path. The initial schema follows these invariants:
+Apply the [database standards](../../.agents/rules/DATABASE_STANDARDS.md) and the accepted [session and migration design](postgresql-integration.md). Ordinary stateless JWT verification remains outside the database session path. The [implemented schema](database-schema.md) represents each M1 incident as a ticket UUID and a required incident detail row. A separate immutable human-readable reference complements the UUID. The initial schema follows these invariants:
 
 - Use UUID entity identifiers and UTC-aware PostgreSQL timestamps. Give each normalized login identifier a unique constraint. Model role and queue memberships with foreign keys and composite uniqueness.
 - Give refresh digests unique constraints. Enforce at most one unconsumed credential per family with a partial unique index. Expired but unconsumed credentials still occupy that slot. The rotation transaction checks expiry and family status. Constrain predecessor/successor relationships to the same family and prevent multiple successors for one predecessor.

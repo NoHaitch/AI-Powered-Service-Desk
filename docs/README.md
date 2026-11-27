@@ -14,7 +14,7 @@ See the [frontend decision](decisions/0002-react-vite-and-bun.md) for the select
 
 See the [frontend experience guide](architecture/frontend-experience.md) for the sitemap, layouts, roles, fixture flows, and implementation priorities.
 
-See the [PostgreSQL integration design](architecture/postgresql-integration.md) for the selected driver, sessions, and migration verification.
+See the [PostgreSQL integration design](architecture/postgresql-integration.md) for the selected driver, sessions, and transaction boundaries. See the [database schema](architecture/database-schema.md) for the implemented data dictionary, ER diagrams, migrations, seeding, and Redis conventions.
 
 See the [observability architecture](architecture/observability.md) for instrumentation priorities, the audit boundary, and optional local collection.
 
@@ -29,3 +29,5 @@ As design work is approved, this index will link to the product requirements and
 Record significant decisions under `docs/decisions/` as they arise. Use a stable identifier and title, status, date, context, decision, alternatives, rationale, trade-offs, consequences, and references. Keep superseded records accessible and link them to their replacements.
 
 Publish commands, configuration, and demo instructions when they can be checked against the repository.
+
+See the [content and storage architecture](architecture/content-storage.md) for the private attachment foundation and proposed catalog, knowledge, and retrieval designs.

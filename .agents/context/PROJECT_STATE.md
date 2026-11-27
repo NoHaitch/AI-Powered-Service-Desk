@@ -1,6 +1,6 @@
 # Project state
 
-**Phase:** M0 complete. **Active milestone:** [M1 Application foundation](../../docs/roadmap.md#m1-application-foundation), frontend preview and backend foundation implemented.
+**Phase:** M0 complete. **Active milestone:** [M1 Application foundation](../../docs/roadmap.md#m1-application-foundation), frontend preview, backend foundation, and M1 database schema implemented.
 
 - Completed setup work includes repository onboarding, the project name and path correction, and the repository engineering workflow. See the [workflow setup plan](../plans/repository-workflow.md) and [root instructions](../../AGENTS.md).
 - The [frontend fixture preview](../../docs/architecture/frontend-experience.md) covers incident intake and L1 triage, catalog requests, ticket conversations and internal notes, seeded assignments and resolutions, a Markdown knowledge base and local drafts, and account tools. Backend integration and the [post-triage workflow decisions](../../docs/architecture/frontend-experience.md#workflow-decisions-pending) remain open.
@@ -12,4 +12,6 @@
 - **Agreed:** Initial limiter defaults and recovery, five-minute reauthentication, same-origin HTTPS with Vite and preferred Nginx release routing, and [PostgreSQL integration](../../docs/decisions/0004-postgresql-integration.md).
 - The [backend foundation](../../backend/README.md) includes locked dependencies, startup configuration, async PostgreSQL and Redis clients, Alembic, safe errors and logs, health checks, and Swagger. The [Compose definitions](../../docs/architecture/local-first.md#run-the-local-stack) render for both frontend targets.
 - **Verification:** Both frontend Docker targets served the preview through loopback HTTPS. The API container passed the Nginx HTTPS smoke check with PostgreSQL and Redis. See the [verification record](../../docs/architecture/local-first.md#verification-record).
-- **Next action:** Verify PostgreSQL volume persistence across container recreation. Then implement the accepted identity and audit schema and synthetic seed command, and settle proxy trust for login rate limiting. Keep optional infrastructure outside the first API slice.
+- The [M1 schema](../../docs/architecture/database-schema.md) and opt-in Argon2id seed command are implemented. Fresh and baseline-upgrade installations passed all 13 tests on separate PostgreSQL 17.12 instances. [Verification](../../docs/architecture/database-schema.md#verification)
+- The [private attachment foundation](../../docs/architecture/content-storage.md) adds metadata, a local volume provider, quotas, and storage lifecycle primitives. Browser upload and download await live auth, CSRF, and incident authorization. Future forms and knowledge workflows remain under their milestone gates.
+- **Next action:** Verify PostgreSQL volume persistence across container recreation and settle proxy trust for login rate limiting. Then build the auth and incident API slices against the verified schema.

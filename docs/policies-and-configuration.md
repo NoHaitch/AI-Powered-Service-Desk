@@ -17,3 +17,5 @@ Use this page as the index for policies across the backend, frontend, and suppor
 For a policy, record the expected behavior, scope, status, and rationale. For a configurable setting, also record the actual key once defined, units or format, default or required status, valid values, environment-specific differences, and behavior when the value is missing or invalid. Link the implementation and verification evidence once available.
 
 Update the relevant documentation, safe example configuration, and validation together when a policy or setting changes. Use safe placeholders for credentials and document where they are supplied. Keep secret values and live tokens out of tracked files.
+
+The [M1 database schema](architecture/database-schema.md#redis-key-conventions) records planned Redis key shapes and the PostgreSQL limiter recovery state. The [database workflow](architecture/database-schema.md#migration-and-local-seed-workflow) records the explicit local seed gate and audit maintenance boundary.

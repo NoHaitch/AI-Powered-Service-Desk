@@ -18,6 +18,8 @@ Apply security by design, secure defaults, defense in depth, least privilege, an
 - Use parameterized SQL and constrain dynamic identifiers and sort fields. Avoid interpolating untrusted input into commands, templates, or paths. Restrict outbound fetches and redirects when accepting URLs. Consider injection, XSS, SSRF, mass assignment, and object-level authorization in reviews and tests.
 - Apply independent controls at each layer. The frontend safely renders untrusted data. The backend validates requests and enforces domain rules. PostgreSQL uses least-privilege runtime credentials, separate migration privileges, constraints, and transactions. Internal services authenticate and authorize calls according to their boundary, validate inputs, and use scoped identities. Private Compose networking limits exposure and never grants trust by itself. Follow the [containerization standards](CONTAINER_STANDARDS.md).
 
+- Keep ticket attachment bytes private and authorize every file through its domain parent. Keep private ticket evidence outside knowledge ingestion and retrieval. Apply content checks, upload limits, storage integrity checks, and explicit download handling. See the [content storage architecture](../../docs/architecture/content-storage.md).
+
 ## Failure handling and operations
 
 - Use consistent HTTP status and error shapes. Return safe messages and a correlation ID where appropriate. Protect diagnostic and audit logs with restricted access and retention rules. Redact credentials, secrets, and sensitive payloads. Audit security-sensitive actions and important outcomes.

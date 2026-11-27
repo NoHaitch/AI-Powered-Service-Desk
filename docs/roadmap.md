@@ -49,7 +49,9 @@ Hosted deployment remains optional (M6).
 
 - [x] Implement the [FastAPI foundation](../backend/README.md) with locked dependencies, migrations, database and cache clients, health endpoints, correlated logs, and same-origin Swagger. Verify native API checks and degraded behavior.
 - [ ] Run the [Compose verification](architecture/local-first.md#run-the-local-stack) on a Docker-enabled host. Build both frontend targets and the API, verify the datastore probes, and confirm volume persistence. Both frontend targets and the API built, and the release HTTPS smoke check passed. PostgreSQL volume persistence after recreation remains pending. See the [verification record](architecture/local-first.md#verification-record) for port forwarding and remaining integration checks.
-- [ ] Provide a documented [database seed command](architecture/local-first.md#demo-data-seeding) that runs after migrations and populates local PostgreSQL with synthetic users and incidents for the intake and triage demo. Verify that a fresh database can be seeded and a second run creates no duplicates.
+- [x] Implement the [M1 PostgreSQL schema](architecture/database-schema.md) for identity, queue membership, shared ticket identity, incident details, refresh lineage, and restricted audits. Verify fresh migration, baseline upgrade, constraints, concurrency, and role permissions on isolated PostgreSQL.
+- [x] Provide a documented [database seed command](architecture/database-schema.md#migration-and-local-seed-workflow) after migrations. Verify it on fresh PostgreSQL and confirm reruns preserve existing synthetic credentials and edits.
+- [x] Verify the [private attachment foundation](architecture/content-storage.md#attachment-foundation) with PostgreSQL metadata and the local storage provider. Attachment APIs and frontend integration wait for live auth and incident authorization.
 - [ ] Implement sign-in, refresh, logout, and server-side authorization for seeded roles. Introduce private Redis rate limiting with the first login and refresh flow. Verify limits, concurrency, expiry, and recovery, plus fail-closed `503` responses and unaffected routes. Add auth and limiter logs, audit events, health signals, and bounded metrics without requiring an observability stack.
 - [ ] Deliver one tested vertical slice where an employee submits and views their own incident, L1 filters the queue and triages the incident, and each successful change produces an audit event. Verify the browser flow and negative cases against the M0 evaluation plan.
 
@@ -61,7 +63,7 @@ Agree on the remaining lifecycle, escalation, priority overrides, and SLA polici
 
 Frontend preview evidence is available for catalog intake, employee tracking, ticket conversations, staff notes, assignments and resolution views, and profile preferences. See [pending workflow decisions](architecture/frontend-experience.md#workflow-decisions-pending). M2 delivery is tracked by the full-stack checklist below.
 
-- [ ] Support incidents and service requests, including assignment, pending work, resolution, closure, and reopening with history.
+- [ ] Support incidents and service requests, including assignment, pending work, resolution, closure, and reopening with history. Review the [versioned catalog form proposal](architecture/content-storage.md#data-ownership) before implementing dynamic forms.
 - [ ] Add role and user administration, L1–L3 queues and routing, escalation, direct specialist routing, reassignment and de-escalation, with reasons and preserved handoff history.
 - [ ] Calculate P1–P4 priority from an impact and urgency matrix, independent of support tier. Record authorized overrides and reasons.
 - [ ] Add configurable response and resolution SLA targets, calendars, time zone, pause and breach behavior, and visible deadlines. Preserve elapsed time correctly across escalation.
@@ -73,7 +75,7 @@ Frontend preview evidence is available for catalog intake, employee tracking, ti
 
 The [frontend preview](architecture/frontend-experience.md) includes searchable synthetic articles and administrator drafts. Publishing, access management, and ingestion remain part of M3.
 
-- [ ] **Functional MVP.** Let administrators upload, version, and manage access to PDF, Markdown, and plain-text knowledge documents. Track source metadata and ingestion status. Verify safe parsing, repeatable ingestion, and replacement and deletion behavior.
+- [ ] **Functional MVP.** Let administrators upload, version, and manage access to PDF, Markdown, and plain-text knowledge documents. Track source metadata and ingestion status. Verify safe parsing, repeatable ingestion, and replacement and deletion behavior. Use the [proposed content model and retrieval boundaries](architecture/content-storage.md#future-domain-links-and-retrieval-boundaries) for review.
 - [ ] **AI-powered MVP.** Compare keyword, vector-based semantic, and hybrid retrieval using a reviewed dataset and identical access rules. Evaluate fusion against the baselines and record relevance and latency results.
 - [ ] **Planned AI.** Add citation-backed employee answers and support troubleshooting, similar-incident search, and evidence-backed resolution suggestions. Handle insufficient evidence, invalid output, and provider failure gracefully. Use a mock provider for routine tests and a clearly labeled demo mode.
 - [ ] **Planned AI.** Instrument retrieval and generation as they ship. Expose relevant retrieval results, model usage, and evaluation results to authorized administrators.
