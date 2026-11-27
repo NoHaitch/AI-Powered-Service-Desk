@@ -22,7 +22,7 @@ export function HelpFaq() {
 
   return (
     <>
-      <PageHeading title="Help & FAQ" description="Learn how to use the preview and browse sample answers to common workplace IT questions." />
+      <PageHeading title="Help & FAQ" description="Learn how to use Service Desk and browse sample answers to common workplace IT questions." />
       <Card>
         <CardContent className="space-y-4">
           <div className="space-y-2">

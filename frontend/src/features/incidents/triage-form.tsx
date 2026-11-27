@@ -6,23 +6,27 @@ import { Alert, AlertTitle } from '@/shared/components/ui/alert'
 import { Button } from '@/shared/components/ui/button'
 import { DeskSelect } from '@/shared/components/ui/desk-select'
 import { Card, CardContent, CardFooter, CardHeader } from '@/shared/components/ui/card'
-import type { Persona } from '@/features/auth/preview-personas'
-import { savePreviewTriage } from './incident-fixtures'
-import { assessPriority, assessments, type Assessment, type Incident } from './incident-model'
+import { errorMessage } from '@/features/auth/client'
+import { assessPriority, assessments, type Assessment } from './incident-model'
 
-export function TriageForm({ incident, persona }: { incident: Incident; persona: Persona }) {
+export function TriageForm({ save }: { save: (impact: Assessment, urgency: Assessment) => Promise<void> }) {
   const [impact, setImpact] = useState<Assessment | ''>('')
   const [urgency, setUrgency] = useState<Assessment | ''>('')
-  const [failure, setFailure] = useState(false)
+  const [failure, setFailure] = useState('')
+  const [busy, setBusy] = useState(false)
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!impact || !urgency) return
-    if (!savePreviewTriage(incident.id, persona, impact, urgency)) {
-      setFailure(true)
-      return
+    if (!impact || !urgency || busy) return
+    setFailure('')
+    setBusy(true)
+    try {
+      await save(impact, urgency)
+    } catch (error) {
+      setFailure(errorMessage(error))
+    } finally {
+      setBusy(false)
     }
-    window.location.assign(`/workspace/tickets/${incident.id}?result=triaged`)
   }
 
   return (
@@ -30,7 +34,7 @@ export function TriageForm({ incident, persona }: { incident: Incident; persona:
       <Card>
         <CardHeader><h2 className="text-lg font-bold">L1 triage</h2></CardHeader>
         <CardContent className="space-y-4">
-          {failure && <Alert variant="destructive"><AlertTitle>Triage could not be saved. Reload to check the current status.</AlertTitle></Alert>}
+          {failure && <Alert variant="destructive"><AlertTitle>{failure}</AlertTitle></Alert>}
           <label className="filter-label">Impact
             <DeskSelect required value={impact} onChange={(event) => setImpact(event.target.value as Assessment | '')}>
               <option value="">Select impact</option>{assessments.map((level) => <option key={level} value={level}>{level[0].toUpperCase() + level.slice(1)}</option>)}
@@ -48,7 +52,7 @@ export function TriageForm({ incident, persona }: { incident: Incident; persona:
             <PriorityBadge priority={impact && urgency ? assessPriority(impact, urgency) : null} />
           </div>
         </CardContent>
-        <CardFooter><Button type="submit" disabled={!impact || !urgency}><RiCheckLine /> Complete triage</Button></CardFooter>
+        <CardFooter><Button type="submit" disabled={!impact || !urgency || busy}><RiCheckLine /> Complete triage</Button></CardFooter>
       </Card>
     </form>
   )

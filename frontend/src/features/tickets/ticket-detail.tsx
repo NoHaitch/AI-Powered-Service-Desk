@@ -4,6 +4,7 @@ import { ActionLink, PageHeading, PriorityBadge, StatusBadge } from '@/app/ui'
 import type { Persona } from '@/features/auth/preview-personas'
 import { services } from '@/features/catalog/catalog-model'
 import { TriageForm } from '@/features/incidents/triage-form'
+import { savePreviewTriage } from '@/features/incidents/incident-fixtures'
 import { Alert, AlertDescription, AlertTitle } from '@/shared/components/ui/alert'
 import { Badge } from '@/shared/components/ui/badge'
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card'
@@ -87,7 +88,10 @@ export function TicketDetail({ ticket, persona }: { ticket: PreviewTicket; perso
           </Card>
         </div>
         {staff && <aside className="space-y-4">
-          {incident?.status === 'new' && <TriageForm incident={incident} persona={persona} />}
+          {incident?.status === 'new' && <TriageForm save={async (impact, urgency) => {
+            if (!savePreviewTriage(incident.id, persona, impact, urgency)) throw new Error('Triage could not be saved.')
+            window.location.assign(`/workspace/tickets/${incident.id}?result=triaged`)
+          }} />}
           <Card>
             <CardHeader><h2 className="text-lg font-bold">Ticket management</h2></CardHeader>
             <CardContent className="space-y-4">

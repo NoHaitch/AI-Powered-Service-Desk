@@ -9,33 +9,39 @@ import { Checkbox } from '@/shared/components/ui/checkbox'
 import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
 import { Textarea } from '@/shared/components/ui/textarea'
-import type { Persona } from '@/features/auth/preview-personas'
-import { createPreviewIncident } from './incident-fixtures'
+import { errorMessage, protectedWrite } from '@/features/auth/client'
 import { descriptionLimit, summaryLimit, validateIncident } from './incident-model'
 
-export function IncidentForm({ persona }: { persona: Persona }) {
+export function IncidentForm({ actor }: { actor: string }) {
   const [summary, setSummary] = useState('')
   const [description, setDescription] = useState('')
   const [promptReview, setPromptReview] = useState(false)
   const [errors, setErrors] = useState<{ summary?: string; description?: string }>({})
-  const [failure, setFailure] = useState(false)
+  const [failure, setFailure] = useState('')
+  const [busy, setBusy] = useState(false)
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (busy) return
     const input = { summary, description, promptReview }
-    const { errors } = validateIncident(input)
+    const { errors, values } = validateIncident(input)
     setErrors(errors)
-    setFailure(false)
+    setFailure('')
     if (Object.keys(errors).length) {
       event.currentTarget.querySelector<HTMLElement>(errors.summary ? '#summary' : '#description')?.focus()
       return
     }
-    const incident = createPreviewIncident(input, persona)
-    if (!incident) {
-      setFailure(true)
-      return
+    setBusy(true)
+    try {
+      const incident = await protectedWrite<{ id: string }>('/api/v1/incidents', actor, {
+        summary: values.summary, description: values.description, prompt_review: values.promptReview,
+      })
+      window.location.assign(`/portal/tickets/${incident.id}?result=created`)
+    } catch (error) {
+      setFailure(errorMessage(error))
+    } finally {
+      setBusy(false)
     }
-    window.location.assign(`/portal/tickets/${incident.id}?result=created`)
   }
 
   return (
@@ -45,7 +51,7 @@ export function IncidentForm({ persona }: { persona: Persona }) {
       <form noValidate onSubmit={submit}>
         <Card>
           <CardContent className="space-y-5">
-            {failure && <Alert variant="destructive"><AlertTitle>Could not save the incident in this tab. Try again.</AlertTitle></Alert>}
+            {failure && <Alert variant="destructive"><AlertTitle>{failure}</AlertTitle></Alert>}
             <div className="space-y-1.5">
               <Label htmlFor="summary">Summary</Label>
               <Input id="summary" required value={summary} placeholder="Example: VPN disconnects when switching networks"
@@ -74,7 +80,7 @@ export function IncidentForm({ persona }: { persona: Persona }) {
             </div>
           </CardContent>
           <CardFooter className="gap-2">
-            <Button type="submit"><RiSendPlaneLine /> Submit incident</Button>
+            <Button type="submit" disabled={busy}><RiSendPlaneLine /> Submit incident</Button>
             <ActionLink href="/portal/tickets" variant="outline">Cancel</ActionLink>
           </CardFooter>
         </Card>

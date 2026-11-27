@@ -2,23 +2,23 @@
   "categories": [
     {
       "id": "using-the-preview",
-      "label": "Using the preview",
+      "label": "Using Service Desk",
       "scope": "preview",
       "entries": [
         {
           "id": "choose-account",
-          "question": "How do I sign in to the preview?",
-          "answer": "Open the sign-in page and choose a synthetic employee, L1 agent, or administrator account. Use the account menu to switch roles in the same tab."
+          "question": "How do I sign in to Service Desk?",
+          "answer": "Open the sign-in page and enter your provisioned username and password. Sign out from the account menu when you are finished."
         },
         {
           "id": "where-data-goes",
-          "question": "Are preview changes sent to the service desk?",
-          "answer": "The demo keeps ticket and draft changes in the current browser tab. Use sample information while testing. Closing the tab normally ends the preview session."
+          "question": "Where are my incident reports stored?",
+          "answer": "The application stores incidents in the service desk database. Use sample information in the local development environment."
         },
         {
           "id": "ticket-visibility",
-          "question": "Who can see my ticket in the preview?",
-          "answer": "Employees can see their own tickets. The L1 agent can see incidents in the L1 workspace. The administrator can view aggregate counts and edit knowledge drafts."
+          "question": "Who can see my incident?",
+          "answer": "Employees can see the incidents they reported. Support agents with L1 queue membership can review incidents from that queue."
         },
         {
           "id": "knowledge-search",
@@ -50,12 +50,12 @@
         {
           "id": "track-ticket",
           "question": "Where can I check the progress of my ticket?",
-          "answer": "Open My Tickets and search by reference or summary. Open the ticket to read replies and see updates in the activity history."
+          "answer": "Open My Tickets and select your incident to see its status and priority."
         },
         {
           "id": "add-details",
           "question": "How do I add new information to an open ticket?",
-          "answer": "Open the ticket and post a reply. Include the time of any new failure and what changed since your last update."
+          "answer": "Contact the service desk with your incident reference and a short account of what changed. Ticket replies are planned for a later milestone."
         },
         {
           "id": "incident-or-request",
@@ -178,7 +178,7 @@
         {
           "id": "safe-screenshot",
           "question": "Can I include a screenshot in a support report?",
-          "answer": "Use an approved support channel and remove passwords, tokens, customer details, and unrelated personal information. The preview accepts text, so describe the visible error using sample information."
+          "answer": "Use an approved support channel and remove passwords, tokens, customer details, and unrelated personal information. Incident reports currently support text. Describe the visible error using sample information."
         },
         {
           "id": "unexpected-mfa",

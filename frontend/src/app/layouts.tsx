@@ -1,10 +1,9 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import {
-  RiBookOpenLine, RiDashboardLine, RiFileList3Line, RiInbox2Line, RiMenuLine, RiNotification3Line, RiQuestionLine, RiUserLine,
-  RiSettings3Line, RiUserSettingsLine,
+  RiDashboardLine, RiInbox2Line, RiMenuLine, RiQuestionLine, RiUserLine,
 } from '@remixicon/react'
 
-import { homeFor, leavePreview, roleLabels, type Persona } from '@/features/auth/preview-personas'
+import { errorMessage, homeForIdentity, roleLabels, signOut, type Identity } from '@/features/auth/client'
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar'
 import { Button } from '@/shared/components/ui/button'
 import {
@@ -25,47 +24,55 @@ const employeeLinks = [
   { href: '/portal/catalog', label: 'Service catalog' }, { href: '/portal/knowledge', label: 'Knowledge Base' },
 ]
 
-function Account({ persona }: { persona?: Persona }) {
-  if (!persona) return <ActionLink variant="outline" href="/login">Sign in</ActionLink>
-  const base = homeFor(persona.role)
+function Account({ identity }: { identity?: Identity }) {
+  const [failure, setFailure] = useState('')
+  const [busy, setBusy] = useState(false)
+  if (!identity) return <ActionLink variant="outline" href="/login">Sign in</ActionLink>
+  const base = homeForIdentity(identity)
+  const initials = identity.display_name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join('')
+
+  async function logout() {
+    if (busy) return
+    setBusy(true)
+    try {
+      await signOut()
+      window.location.replace('/login')
+    } catch (error) {
+      setFailure(errorMessage(error))
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button variant="ghost" aria-label="Account menu" />}>
-        <Avatar className="size-7"><AvatarFallback className="bg-accent text-[10px] text-accent-foreground">{persona.initials}</AvatarFallback></Avatar>
-        <span className="hidden text-sm sm:inline">{persona.name}</span>
+        <Avatar className="size-7"><AvatarFallback className="bg-accent text-[10px] text-accent-foreground">{initials}</AvatarFallback></Avatar>
+        <span className="hidden text-sm sm:inline">{identity.display_name}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-45">
         <DropdownMenuGroup>
-          <DropdownMenuLabel>{roleLabels[persona.role]}</DropdownMenuLabel>
+          <DropdownMenuLabel>{identity.roles.map((role) => roleLabels[role]).join(', ') || 'Account'}</DropdownMenuLabel>
           <DropdownMenuItem render={<a href={`${base}/profile`} />}>Profile & preferences</DropdownMenuItem>
-          <DropdownMenuItem render={<a href={`${base}/notifications`} />}><RiNotification3Line /> Notifications</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem render={<a href="/login" />}>Switch preview role</DropdownMenuItem>
-          <DropdownMenuItem onClick={leavePreview}>Sign out</DropdownMenuItem>
+          <DropdownMenuItem disabled={busy} onClick={(event) => { event.preventBaseUIHandler(); void logout() }}>Sign out</DropdownMenuItem>
+          {failure && <p role="alert" className="max-w-64 px-2 py-1 text-sm text-destructive">{failure}</p>}
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   )
 }
 
-function PreviewNotice() {
-  return (
-    <div className="border-b border-border bg-muted px-5 py-2 text-center text-xs font-medium text-muted-foreground dark:bg-secondary dark:text-secondary-foreground">
-      Local preview · Synthetic data · Changes stay in this tab
-    </div>
-  )
-}
-
 export function TopLayout({
-  persona, employee = false, path, children,
-}: { persona?: Persona; employee?: boolean; path: string; children: ReactNode }) {
+  identity, employee = false, path, children,
+}: { identity?: Identity; employee?: boolean; path: string; children: ReactNode }) {
   const links = employee ? employeeLinks : publicLinks
   return (
     <div className="flex min-h-svh flex-col bg-background">
       <a href="#main" className="skip-link">Skip to content</a>
       <header className="border-b border-border bg-background">
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-5 sm:px-8 lg:gap-8">
-          <a href={persona ? homeFor(persona.role) : '/login'} aria-label="Service Desk home"><Brand /></a>
+          <a href={identity ? homeForIdentity(identity) : '/login'} aria-label="Service Desk home"><Brand /></a>
           <nav aria-label="Main navigation" className="hidden items-center gap-5 md:flex">
             {links.map((link) => (
               <a key={link.href} href={link.href} aria-current={path === link.href ? 'page' : undefined}
@@ -76,7 +83,7 @@ export function TopLayout({
           </nav>
           <div className="ml-auto flex items-center gap-1 sm:gap-2">
             <ThemeControl />
-            {(!persona && path === '/login') ? null : <Account persona={persona} />}
+            {(!identity && path === '/login') ? null : <Account identity={identity} />}
             <div className="md:hidden">
               <Sheet>
                 <SheetTrigger render={<Button variant="ghost" size="icon-sm" aria-label="Open navigation" />}>
@@ -97,7 +104,6 @@ export function TopLayout({
           </div>
         </div>
       </header>
-      {employee && <PreviewNotice />}
       <main id="main" className="flex flex-1 flex-col">{children}</main>
       <Footer />
     </div>
@@ -107,18 +113,12 @@ export function TopLayout({
 const workspaceLinks = [
   { href: '/workspace', label: 'Overview', icon: RiDashboardLine },
   { href: '/workspace/queue', label: 'L1 intake queue', icon: RiInbox2Line },
-  { href: '/workspace/tickets', label: 'All tickets', icon: RiFileList3Line },
-  { href: '/workspace/assignments', label: 'My assignments', icon: RiUserLine },
-]
-const adminLinks = [
-  { href: '/workspace', label: 'Overview', icon: RiDashboardLine },
-  { href: '/workspace/knowledge', label: 'Manage knowledge', icon: RiBookOpenLine },
-  { href: '/workspace/access', label: 'User & access management', icon: RiUserSettingsLine },
-  { href: '/workspace/settings', label: 'System settings', icon: RiSettings3Line },
+  { href: '/workspace/profile', label: 'Profile & preferences', icon: RiUserLine },
 ]
 
-export function WorkspaceLayout({ persona, path, children }: { persona: Persona; path: string; children: ReactNode }) {
-  const links = persona.role === 'administrator' ? adminLinks : workspaceLinks
+export function WorkspaceLayout({ identity, path, children }: { identity: Identity; path: string; children: ReactNode }) {
+  const agent = identity.roles.includes('agent')
+  const links = workspaceLinks.filter(({ href }) => agent || href !== '/workspace/queue')
   return (
     <SidebarProvider className="bg-background">
       <a href="#main" className="skip-link">Skip to content</a>
@@ -129,7 +129,7 @@ export function WorkspaceLayout({ persona, path, children }: { persona: Persona;
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
-            <SidebarGroupLabel>{persona.role === 'administrator' ? 'Administration' : 'Support workspace'}</SidebarGroupLabel>
+            <SidebarGroupLabel>{agent ? 'Support workspace' : 'Administration'}</SidebarGroupLabel>
             <SidebarMenu>
               {links.map(({ href, label, icon: Icon }) => (
                 <SidebarMenuItem key={href}>
@@ -151,10 +151,9 @@ export function WorkspaceLayout({ persona, path, children }: { persona: Persona;
           <div className="ml-auto flex items-center gap-1">
             <ActionLink href="/help" variant="ghost" aria-label="Help" className="hidden sm:inline-flex"><RiQuestionLine /></ActionLink>
             <ThemeControl />
-            <Account persona={persona} />
+            <Account identity={identity} />
           </div>
         </header>
-        <PreviewNotice />
         <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-6 sm:px-8 sm:py-8">
           {children}
         </div>

@@ -15,7 +15,7 @@ export function InformationPage({ help = false }: { help?: boolean }) {
           <header className="brand-hero rounded-4xl border border-border px-6 py-8 sm:px-10 sm:py-12">
             <PageHeading title="About Service Desk" description="A local-first IT support application for employees and service desk teams." />
             <div className="mt-6 flex flex-wrap gap-3">
-              <ActionLink href="/login">Choose a preview account</ActionLink>
+              <ActionLink href="/login">Sign in</ActionLink>
               <ActionLink href="/help" variant="outline"><RiQuestionLine aria-hidden="true" /> Read the FAQ</ActionLink>
             </div>
           </header>
@@ -28,11 +28,11 @@ export function InformationPage({ help = false }: { help?: boolean }) {
                     How it works
                   </h2>
                   <ol className="list-decimal space-y-1 pl-5">
-                    <li>Choose an employee persona and report a disruption. The ticket appears as <strong>New</strong> in My Tickets.</li>
-                    <li>Switch to the L1 support persona in the same tab. In the intake queue, assess impact and urgency to calculate the incident's priority and complete triage.</li>
-                    <li>Switch back to the requester to see the updated status, priority, and activity in My Tickets.</li>
+                    <li>Sign in with an employee account and report a disruption. The ticket appears as <strong>New</strong> in My Tickets.</li>
+                    <li>An authorized L1 agent assesses impact and urgency in the intake queue to calculate priority and complete triage.</li>
+                    <li>The requester sees the updated status and priority in My Tickets.</li>
                   </ol>
-                  <p>The preview uses synthetic accounts and keeps ticket changes in the current browser tab. Use sample information when trying the workflow.</p>
+                  <p>The local development environment uses provisioned synthetic accounts. Ticket updates persist in PostgreSQL. Use sample information when trying the workflow.</p>
                 </CardContent>
               </Card>
             </section>
@@ -45,9 +45,8 @@ export function InformationPage({ help = false }: { help?: boolean }) {
                   </h2>
                   <ul className="list-disc space-y-1 pl-5">
                     <li>Report a VPN outage, flag it for prompt review, and track the incident as L1 assesses it.</li>
-                    <li>Request shared-drive access through the service catalog or look up instructions in the knowledge base.</li>
-                    <li>Review incoming reports as an L1 agent, reply to employees, and leave internal notes for support staff.</li>
-                    <li>Try editing a knowledge article draft as an administrator. Employees continue to see the published sample.</li>
+                    <li>Explore the service catalog or look up instructions in the knowledge base.</li>
+                    <li>Review incoming reports as an L1 agent and record the impact, urgency, and resulting priority.</li>
                   </ul>
                 </CardContent>
               </Card>
@@ -60,7 +59,7 @@ export function InformationPage({ help = false }: { help?: boolean }) {
                     Technology stack
                   </h2>
                   <p>React and TypeScript power the interface, with Tailwind CSS and shadcn/ui for styling and components. Bun manages dependencies, Vite runs the development server and builds the app, and Nginx serves the release build in Docker Compose.</p>
-                  <p>The Python and FastAPI backend provides health checks for PostgreSQL and Redis. PostgreSQL is the foundation for durable ticket storage, and Redis is in place for planned sign-in rate limiting. Live ticket storage, account sign-in, and AI-assisted troubleshooting are planned.</p>
+                  <p>The Python and FastAPI backend manages accounts, sessions, and incident authorization. PostgreSQL stores tickets and audit records, and Redis limits sign-in and refresh attempts.</p>
                 </CardContent>
               </Card>
             </section>
@@ -93,11 +92,11 @@ export function InformationPage({ help = false }: { help?: boolean }) {
 }
 
 const errors = {
-  401: { title: 'Sign-in required', description: 'Choose a preview account to open this area.' },
+  401: { title: 'Sign-in required', description: 'Sign in with your Service Desk account to open this area.' },
   403: { title: 'Access denied', description: 'Your current role does not have access to this area.' },
   404: { title: 'Page not found', description: 'This page or ticket is unavailable.' },
   500: { title: 'Something went wrong', description: 'Try reloading the page. If it keeps happening, return to the service desk.' },
-  503: { title: 'Service temporarily unavailable', description: 'Try again later. Preview data may also be unavailable when browser storage is disabled.' },
+  503: { title: 'Service temporarily unavailable', description: 'Try reloading the page in a moment.' },
 }
 
 export type ErrorCode = keyof typeof errors

@@ -1,62 +1,67 @@
-import {
-  RiArrowRightLine, RiHeadphoneLine, RiInbox2Line, RiShieldCheckLine, RiUser3Line,
-} from '@remixicon/react'
+import { useState, type FormEvent } from 'react'
+import { RiShieldCheckLine } from '@remixicon/react'
 
-import { Badge } from '@/shared/components/ui/badge'
+import { PageHeading } from '@/app/ui'
+import { Alert, AlertTitle } from '@/shared/components/ui/alert'
 import { Button } from '@/shared/components/ui/button'
-import { enterPreview, personas, roleLabels } from './preview-personas'
+import { Card, CardContent } from '@/shared/components/ui/card'
+import { Input } from '@/shared/components/ui/input'
+import { Label } from '@/shared/components/ui/label'
+import { Spinner } from '@/shared/components/ui/spinner'
+import { ApiError, errorMessage, homeForIdentity, signIn } from './client'
 
 export function LoginPage() {
+  const [failure, setFailure] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [retryAt, setRetryAt] = useState(0)
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (busy || Date.now() < retryAt) return
+    const form = new FormData(event.currentTarget)
+    setBusy(true)
+    setFailure('')
+    try {
+      const identity = await signIn(String(form.get('username')), String(form.get('password')))
+      window.location.replace(homeForIdentity(identity))
+    } catch (error) {
+      if (error instanceof ApiError && error.retryAfter) {
+        setRetryAt(Date.now() + error.retryAfter * 1000)
+      }
+      setFailure(errorMessage(error, true))
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
-    <div className="grid flex-1 bg-desk-surface lg:grid-cols-[0.93fr_1fr]">
-      <section className="brand-hero px-6 py-10 sm:px-12 lg:flex lg:flex-col lg:justify-center lg:px-18 lg:py-16">
-        <div className="relative mx-auto w-full max-w-md">
-          <div className="mb-6 flex size-13 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-            <RiHeadphoneLine className="size-7" aria-hidden="true" />
+    <div className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-8 px-5 py-10 sm:px-8 lg:grid-cols-2">
+      <div className="brand-hero space-y-4 rounded-4xl border border-border p-8 sm:p-12">
+        <PageHeading title="Workplace IT support" description="Report a disruption, track your incidents, or triage incoming reports from the support workspace." />
+      </div>
+      <Card className="w-full lg:mx-auto lg:max-w-md">
+        <CardContent className="space-y-5 pt-2">
+          <div className="space-y-2">
+            <RiShieldCheckLine className="size-6 text-primary" aria-hidden="true" />
+            <h2 className="text-2xl font-bold">Sign in to Service Desk</h2>
+            <p className="text-sm text-muted-foreground">Use your provisioned username and password.</p>
           </div>
-          <h1 className="text-4xl leading-tight font-bold tracking-tight sm:text-5xl">AI-Powered<br />Service Desk</h1>
-          <p className="mt-4 max-w-sm text-base leading-relaxed text-muted-foreground">
-            Report workplace IT issues, track your tickets, and help the service desk triage incoming incidents.
-          </p>
-          <div className="mt-10 hidden grid-cols-2 gap-3 lg:grid">
-            <div className="rounded-2xl border border-border bg-card/60 p-4">
-              <RiUser3Line className="mb-3 size-5 text-primary" aria-hidden="true" />
-              <p className="text-sm font-semibold">Employee portal</p>
-              <p className="mt-1 text-xs text-muted-foreground">Submit and track incidents</p>
+          <form className="space-y-4" onSubmit={submit}>
+            {failure && <Alert variant="destructive"><AlertTitle>{failure}</AlertTitle></Alert>}
+            <div className="space-y-2">
+              <Label htmlFor="username">Username</Label>
+              <Input id="username" name="username" autoComplete="username" maxLength={128} required />
             </div>
-            <div className="rounded-2xl border border-border bg-card/60 p-4">
-              <RiInbox2Line className="mb-3 size-5 text-primary" aria-hidden="true" />
-              <p className="text-sm font-semibold">Support workspace</p>
-              <p className="mt-1 text-xs text-muted-foreground">Review and triage reports</p>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input id="password" name="password" type="password" autoComplete="current-password" maxLength={128} required />
             </div>
-          </div>
-        </div>
-      </section>
-      <section className="px-5 py-10 sm:px-10 lg:flex lg:items-center lg:py-16">
-        <div className="mx-auto w-full max-w-md">
-          <Badge variant="outline" className="mb-4"><RiShieldCheckLine aria-hidden="true" /> Local preview</Badge>
-          <h2 className="text-3xl font-bold tracking-tight">Sign in to the preview</h2>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Choose a synthetic account to explore its role. The preview does not connect to an authentication service.
-          </p>
-          <div className="mt-6 grid gap-2.5">
-            {personas.map((persona) => (
-              <Button key={persona.id} variant="outline" className="h-auto w-full justify-between gap-3 bg-card px-3 py-3.5 text-left"
-                onClick={() => enterPreview(persona)} aria-label={`Continue as ${persona.name}, ${roleLabels[persona.role]}`}>
-                <span className="flex min-w-0 items-center gap-3">
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent text-xs font-bold text-accent-foreground">{persona.initials}</span>
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm font-semibold">{persona.name}</span>
-                    <span className="block text-xs font-normal text-muted-foreground">{roleLabels[persona.role]} · {persona.team}</span>
-                  </span>
-                </span>
-                <RiArrowRightLine className="text-muted-foreground" aria-hidden="true" />
-              </Button>
-            ))}
-          </div>
-          <p className="mt-4 text-xs leading-relaxed text-muted-foreground">Use synthetic information only. Preview changes are stored in this tab.</p>
-        </div>
-      </section>
+            <Button className="w-full" type="submit" disabled={busy}>
+              {busy && <Spinner aria-hidden="true" />} Sign in
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   )
 }
