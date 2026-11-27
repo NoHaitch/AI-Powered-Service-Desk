@@ -14,6 +14,8 @@
 
 Bind the HTTPS browser entry point to loopback and keep the API, database, cache, and inference ports private in the reference topology. Route API requests before any SPA fallback. Trust forwarding headers only from the configured proxy. Local certificate provisioning and Compose routing details belong to M1. Add a dedicated gateway, vector search, MCP, and orchestration only when their roadmap prerequisites are met. See the [frontend decision](../decisions/0002-react-vite-and-bun.md).
 
+The [repository structure standard](../../.agents/rules/REPOSITORY_STRUCTURE.md) defines where these deployables, their configuration, and their tests live.
+
 ## Persistence and caching
 
 See the [persistence and cache decision](../decisions/0001-postgresql-and-redis.md) for the rationale and consequences. The alternatives considered were:

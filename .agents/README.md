@@ -11,6 +11,7 @@ Start with the [repository instructions](../AGENTS.md). Open only the entries re
 | Engineering rules | [Coding](rules/CODING_STANDARDS.md), [testing](rules/TESTING_STANDARDS.md), [documentation](rules/DOCUMENTATION_STANDARDS.md), [security](rules/SECURITY_STANDARDS.md), [containerization](rules/CONTAINER_STANDARDS.md), [context](rules/CONTEXT_MANAGEMENT.md) |
 | Operational instrumentation | [Observability](rules/OBSERVABILITY_STANDARDS.md) |
 | Data integrity and persistence | [Database standards](rules/DATABASE_STANDARDS.md) |
+| Monorepo layout and component ownership | [Repository structure](rules/REPOSITORY_STRUCTURE.md) |
 | Reusable, task-specific workflows | [Required skill triggers](../AGENTS.md#required-skill-triggers) |
 | Working artifacts | `plans/` for substantial plans, `handoffs/` for transfers that need extra detail, and `prompts/` for reusable prompts worth sharing |
 | Private scratch | `local/` and `scratch/` are Git-ignored. Keep secrets in an appropriate secret store. |

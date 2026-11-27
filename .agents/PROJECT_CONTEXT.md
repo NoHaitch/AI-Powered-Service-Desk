@@ -166,27 +166,9 @@ Potential hosted setup: Vercel Hobby for personal frontend, Firebase Auth/Firest
 
 If only frontend is hosted, provide a clearly labeled seeded/demo mode, screenshots or recorded walkthrough; do not imply offline services are live. Never expose private API keys to browser clients.
 
-## 12. Proposed repository layout
+## 12. Repository structure
 
-```text
-AI-Powered-Service-Desk/
-  AGENTS.md
-  .agents/PROJECT_CONTEXT.md
-  apps/web/
-  apps/api/
-  services/ml-inference/
-  services/mcp-server/
-  evaluations/
-  infrastructure/
-  docs/architecture/
-  docs/decisions/
-  docs/requirements/
-  compose.yaml
-  .env.example
-  README.md
-```
-
-This is a target layout; create directories as needed, not empty scaffolding for every future feature.
+The [repository structure standard](rules/REPOSITORY_STRUCTURE.md) defines the accepted monorepo layout, component ownership, and how to extend it beyond M1.
 
 ## 13. Delivery milestones
 
