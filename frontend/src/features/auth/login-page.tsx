@@ -9,25 +9,25 @@ import { enterPreview, personas, roleLabels } from './preview-personas'
 export function LoginPage() {
   return (
     <div className="grid flex-1 bg-desk-surface lg:grid-cols-[0.93fr_1fr]">
-      <section className="login-hero relative isolate overflow-hidden bg-slate-950 px-6 py-10 text-white sm:px-12 lg:flex lg:flex-col lg:justify-center lg:px-18 lg:py-16">
+      <section className="brand-hero px-6 py-10 sm:px-12 lg:flex lg:flex-col lg:justify-center lg:px-18 lg:py-16">
         <div className="relative mx-auto w-full max-w-md">
-          <div className="mb-6 flex size-13 items-center justify-center rounded-2xl bg-blue-500 text-white">
+          <div className="mb-6 flex size-13 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
             <RiHeadphoneLine className="size-7" aria-hidden="true" />
           </div>
           <h1 className="text-4xl leading-tight font-bold tracking-tight sm:text-5xl">AI-Powered<br />Service Desk</h1>
-          <p className="mt-4 max-w-sm text-base leading-relaxed text-slate-300">
+          <p className="mt-4 max-w-sm text-base leading-relaxed text-muted-foreground">
             Report workplace IT issues, track your tickets, and help the service desk triage incoming incidents.
           </p>
           <div className="mt-10 hidden grid-cols-2 gap-3 lg:grid">
-            <div className="rounded-2xl border border-white/15 bg-white/5 p-4">
-              <RiUser3Line className="mb-3 size-5 text-blue-300" aria-hidden="true" />
+            <div className="rounded-2xl border border-border bg-card/60 p-4">
+              <RiUser3Line className="mb-3 size-5 text-primary" aria-hidden="true" />
               <p className="text-sm font-semibold">Employee portal</p>
-              <p className="mt-1 text-xs text-slate-300">Submit and track incidents</p>
+              <p className="mt-1 text-xs text-muted-foreground">Submit and track incidents</p>
             </div>
-            <div className="rounded-2xl border border-white/15 bg-white/5 p-4">
-              <RiInbox2Line className="mb-3 size-5 text-blue-300" aria-hidden="true" />
+            <div className="rounded-2xl border border-border bg-card/60 p-4">
+              <RiInbox2Line className="mb-3 size-5 text-primary" aria-hidden="true" />
               <p className="text-sm font-semibold">Support workspace</p>
-              <p className="mt-1 text-xs text-slate-300">Review and triage reports</p>
+              <p className="mt-1 text-xs text-muted-foreground">Review and triage reports</p>
             </div>
           </div>
         </div>
@@ -44,7 +44,7 @@ export function LoginPage() {
               <Button key={persona.id} variant="outline" className="h-auto w-full justify-between gap-3 bg-card px-3 py-3.5 text-left"
                 onClick={() => enterPreview(persona)} aria-label={`Continue as ${persona.name}, ${roleLabels[persona.role]}`}>
                 <span className="flex min-w-0 items-center gap-3">
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-xs font-bold text-blue-800 dark:bg-blue-950 dark:text-blue-200">{persona.initials}</span>
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent text-xs font-bold text-accent-foreground">{persona.initials}</span>
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-semibold">{persona.name}</span>
                     <span className="block text-xs font-normal text-muted-foreground">{roleLabels[persona.role]} · {persona.team}</span>

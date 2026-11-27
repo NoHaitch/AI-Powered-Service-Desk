@@ -14,7 +14,7 @@ export function BrowseFilters({ query, category, categories, onQuery, onCategory
       <label className="filter-label w-full sm:max-w-80">Search
         <span className="relative">
           <RiSearchLine className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-          <Input type="search" className="pl-9" value={query} onChange={(event) => onQuery(event.target.value)} />
+          <Input type="search" className="rounded-xl pl-9" value={query} onChange={(event) => onQuery(event.target.value)} />
         </span>
       </label>
       <label className="filter-label">Category

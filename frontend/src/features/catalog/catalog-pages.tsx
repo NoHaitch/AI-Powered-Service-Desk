@@ -29,11 +29,14 @@ export function ServiceCatalog() {
       <p className="text-sm text-muted-foreground" aria-live="polite">{results.length} {results.length === 1 ? 'service' : 'services'}</p>
       {results.length ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {results.map((service) => (
-          <Card key={service.id}>
-            <CardHeader><Badge variant="outline">{service.category}</Badge><h2 className="mt-2 text-lg font-bold">{service.title}</h2></CardHeader>
+          <Card key={service.id} className="border border-border shadow-none ring-0">
+            <CardHeader><Badge variant="outline" className="bg-muted text-muted-foreground">{service.category}</Badge><h2 className="mt-2 text-lg font-bold">{service.title}</h2></CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">{service.description}</p>
-              <ActionLink variant="outline" href={`/portal/requests/new/${service.id}`}>Open request <RiArrowRightLine /></ActionLink>
+              <a className="inline-flex items-center gap-1.5 rounded-sm text-sm font-semibold text-primary underline-offset-4 hover:underline focus-visible:underline"
+                href={`/portal/requests/new/${service.id}`}>
+                Open request <RiArrowRightLine className="size-4" aria-hidden="true" />
+              </a>
             </CardContent>
           </Card>
         ))}
@@ -70,7 +73,7 @@ export function RequestForm({ service, persona }: { service: Service; persona: P
     <div className="max-w-2xl space-y-5">
       <ActionLink href="/portal/catalog" variant="ghost">Back to service catalog</ActionLink>
       <PageHeading title={service.title} description={service.description} />
-      <Card>
+      <Card className="border border-border shadow-none ring-0">
         <CardContent>
           <form className="space-y-4" onSubmit={submit} noValidate>
             {failure && <Alert variant="destructive"><AlertTitle>Could not save the request in this tab. Try again.</AlertTitle></Alert>}

@@ -31,7 +31,7 @@ function Account({ persona }: { persona?: Persona }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button variant="ghost" aria-label="Account menu" />}>
-        <Avatar className="size-7"><AvatarFallback className="bg-blue-100 text-[10px] text-blue-800">{persona.initials}</AvatarFallback></Avatar>
+        <Avatar className="size-7"><AvatarFallback className="bg-accent text-[10px] text-accent-foreground">{persona.initials}</AvatarFallback></Avatar>
         <span className="hidden text-sm sm:inline">{persona.name}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-45">
@@ -50,7 +50,7 @@ function Account({ persona }: { persona?: Persona }) {
 
 function PreviewNotice() {
   return (
-    <div className="border-b border-blue-100 bg-blue-50 px-5 py-2 text-center text-xs font-medium text-blue-900 dark:border-blue-950 dark:bg-blue-950/60 dark:text-blue-200">
+    <div className="border-b border-border bg-muted px-5 py-2 text-center text-xs font-medium text-muted-foreground dark:bg-secondary dark:text-secondary-foreground">
       Local preview · Synthetic data · Changes stay in this tab
     </div>
   )
@@ -69,7 +69,7 @@ export function TopLayout({
           <nav aria-label="Main navigation" className="hidden items-center gap-5 md:flex">
             {links.map((link) => (
               <a key={link.href} href={link.href} aria-current={path === link.href ? 'page' : undefined}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground aria-[current=page]:text-primary dark:aria-[current=page]:text-blue-300">
+                className="text-sm font-medium text-muted-foreground hover:text-foreground aria-[current=page]:text-primary">
                 {link.label}
               </a>
             ))}
@@ -120,7 +120,7 @@ const adminLinks = [
 export function WorkspaceLayout({ persona, path, children }: { persona: Persona; path: string; children: ReactNode }) {
   const links = persona.role === 'administrator' ? adminLinks : workspaceLinks
   return (
-    <SidebarProvider className="workspace-shell bg-background">
+    <SidebarProvider className="bg-background">
       <a href="#main" className="skip-link">Skip to content</a>
       <Sidebar collapsible="icon">
         <SidebarHeader className="border-b border-sidebar-border px-3 py-3">

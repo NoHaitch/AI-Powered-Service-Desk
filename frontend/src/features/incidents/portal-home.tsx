@@ -21,16 +21,16 @@ export function PortalHome({ persona, tickets }: { persona: Persona; tickets: Pr
   const recent = tickets.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 3)
   return (
     <div className="flex-1 bg-desk-surface">
-      <section className="portal-hero bg-slate-950 text-white">
+      <section className="brand-hero border-b border-border">
         <div className="mx-auto max-w-7xl px-5 py-11 sm:px-8 sm:py-14">
-          <p className="mb-2 text-sm font-semibold text-blue-200">Employee self-service</p>
+          <p className="mb-2 text-sm font-semibold text-primary">Employee self-service</p>
           <h1 className="text-3xl font-bold tracking-tight sm:text-5xl">How can we help, {persona.name.split(' ')[0]}?</h1>
-          <p className="mt-3 text-sm text-slate-300 sm:text-base">Report a problem, track your tickets, or find the right support.</p>
-          <form action="/portal/tickets" className="mt-6 flex max-w-xl items-center gap-2 rounded-xl bg-white p-1.5 text-slate-950 focus-within:ring-2 focus-within:ring-blue-400">
-            <RiSearchLine className="ml-2 size-5 shrink-0 text-slate-500" aria-hidden="true" />
+          <p className="mt-3 text-sm text-muted-foreground sm:text-base">Report a problem, track your tickets, or find the right support.</p>
+          <form action="/portal/tickets" className="mt-6 flex max-w-xl items-center gap-2 rounded-xl border border-input bg-card p-1.5 text-card-foreground focus-within:ring-2 focus-within:ring-ring">
+            <RiSearchLine className="ml-2 size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
             <Input name="q" aria-label="Search your tickets" placeholder="Search your tickets by reference or summary"
-              className="min-w-0 grow border-0 bg-transparent text-slate-950 shadow-none placeholder:text-slate-500 focus-visible:ring-0 dark:bg-transparent" />
-            <button className="shrink-0 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Search</button>
+              className="min-w-0 grow border-0 bg-transparent text-card-foreground shadow-none focus-visible:ring-0 dark:bg-transparent" />
+            <button className="shrink-0 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90">Search</button>
           </form>
         </div>
       </section>
@@ -42,7 +42,7 @@ export function PortalHome({ persona, tickets }: { persona: Persona; tickets: Pr
             {actions.map(({ href, title, description, icon: Icon, planned }) => (
               <a key={href} href={href} className="group flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 hover:border-primary/40 hover:bg-accent/40">
                 <div className="flex items-center justify-between gap-1">
-                  <span className="flex size-9 items-center justify-center rounded-xl bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-200"><Icon className="size-5" aria-hidden="true" /></span>
+                  <span className="flex size-9 items-center justify-center rounded-xl bg-accent text-accent-foreground"><Icon className="size-5" aria-hidden="true" /></span>
                   {planned ? <Badge variant="outline" className="text-muted-foreground">Planned</Badge> : <RiArrowRightLine className="size-4 text-primary" aria-hidden="true" />}
                 </div>
                 <div>
