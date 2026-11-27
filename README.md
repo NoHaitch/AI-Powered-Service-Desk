@@ -40,7 +40,7 @@ AI-Powered Service Desk is a local-first IT service management application in de
 
 **Current status:** The local frontend preview covers incident submission, L1 triage, catalog requests, ticket conversations, seeded assignments and resolutions, and synthetic knowledge articles and drafts. Live authentication and full-stack service desk workflows remain planned.
 
-The backend foundation includes health endpoints, local Swagger UI, PostgreSQL and Redis clients, and Alembic migration tooling. Native PostgreSQL verification passed. Container builds and live Redis verification are pending.
+The backend foundation includes health endpoints, local Swagger UI, PostgreSQL and Redis clients, and Alembic migration tooling. PostgreSQL and Redis passed Docker health checks and authenticated probes. See the [local stack verification record](docs/architecture/local-first.md#verification-record) for frontend and remaining integration checks.
 
 | Release target | Planned capabilities |
 | --- | --- |

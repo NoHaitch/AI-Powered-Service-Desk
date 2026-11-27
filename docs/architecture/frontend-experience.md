@@ -7,13 +7,14 @@ The service desk has three navigation areas built on React, Vite, Tailwind CSS, 
 | Area | Route or route family | Frontend preview state |
 | --- | --- | --- |
 | Public | `/`, `/login` | Synthetic persona selection. Real username and password login waits for FastAPI. |
-| Public | `/about`, `/help` | Application overview and role-aware preview guidance. |
+| Public | `/about` | Preview workflow, employee and staff use cases, technology stack, sample contacts, and a link to the FAQ. |
+| Public | `/help` | Categorized FAQ for the preview and sample workplace IT guidance. |
 | Public | `/error/401`, `/error/403`, `/error/404`, `/error/500`, `/error/503` | Safe error views; unauthorized, forbidden, and unavailable ticket navigation use these presentations. |
 | Public | Registration and password recovery | Deferred until account policy and backend support are defined. |
 | Employee | `/portal`, `/portal/tickets` | Search assistance, primary actions, recent incidents, and searchable and paginated owned tickets. |
 | Employee | `/portal/incidents/new`, `/portal/tickets/:id` | Incident submission, ticket details, scoped replies, activity history, and seeded resolutions. |
 | Employee | `/portal/catalog`, `/portal/requests/new/:service` | Searchable and categorized synthetic services with dedicated request forms and employee tracking. `/portal/requests/new` also opens the catalog. |
-| Employee | `/portal/knowledge`, `/portal/knowledge/:article` | Search, category filtering, and synthetic published articles. Relevant articles link to request forms. |
+| Employee | `/portal/knowledge`, `/portal/knowledge/:article` | Search, category filtering, and synthetic Markdown articles. Relevant articles link to request forms. |
 | Employee and management | `/{portal,workspace}/profile`, `/{portal,workspace}/notifications` | Persona profile, local preferences, scoped ticket updates, and per-persona read state. |
 | Employee | `/portal/assistant`, service status | Grounded assistance placeholder. Service status is planned. |
 | Management | `/workspace` | Role-aware fixture counts and Recharts incident volume. Administrators see aggregates and have no default access to incident details. |
@@ -24,9 +25,53 @@ The service desk has three navigation areas built on React, Vite, Tailwind CSS, 
 
 ## Layout and design system
 
-Public and employee pages use a responsive top bar, account and theme controls, and a minimal footer. The management area uses the existing collapsible shadcn Sidebar and a top utility bar. Ticket details include a breadcrumb and an activity timeline. Theme preference can be Light, Dark, or System.
+Public and employee pages use a responsive top bar with account and theme controls. The management area uses the existing collapsible shadcn Sidebar and a top utility bar. Ticket details include a breadcrumb and an activity timeline.
 
-Raleway, the Blue/Stone shadcn tokens, and Remix Icons remain the visual baseline. Use existing shadcn inputs, buttons, cards, menus, alerts, badges, and overlays. Use semantic status and priority colors with text labels. Keep reduced-motion support, visible focus, accessible labels, and bounded mobile table scrolling. See the [frontend design standard](../../.agents/rules/FRONTEND_DESIGN_STANDARDS.md).
+An app-wide theme provider follows the system's light or dark preference on first visit and tracks system changes until the user chooses a theme. The header button switches directly to the opposite theme. Its hover and keyboard-focus tooltip names the next action. The user's choice is stored in the browser and applied across routes and reloads.
+
+Public, employee, and management pages share a footer. It shows ©, the current year calculated at runtime, the author name NoHaitch, and the application name AI-Powered Service Desk. The text-only links appear in the order About, Help, and GitHub. The footer can wrap at narrow widths. GitHub links to the [project repository](https://github.com/NoHaitch/AI-Powered-Service-Desk).
+
+The About page opens with links to preview sign-in and the FAQ. Its four cards cover the workflow, use cases, technology, and sample contacts. Cards stack on smaller screens and use two columns on large screens. Body paragraphs and lists are justified, with left-aligned headings and contact details. The workflow walks through employee intake, L1 triage, and requester follow-up. It also shows use cases for the catalog, knowledge base, and staff workspace. Keep the technology summary aligned with the stack and clearly label the synthetic preview. The contact section displays `support@example.com` and `+1 (202) 555-0147` as sample details.
+
+Raleway, the shared shadcn theme tokens, and Remix Icons form the visual baseline. Use existing shadcn inputs, buttons, cards, menus, alerts, badges, and overlays. Use semantic status and priority colors with text labels. Keep reduced-motion support, visible focus, accessible labels, and bounded mobile table scrolling. See the [frontend design standard](../../.agents/rules/FRONTEND_DESIGN_STANDARDS.md).
+
+## Color palette
+
+Use blue as the brand accent, with white and neutral gray surfaces in light mode and blue-tinted near-black surfaces in dark mode. Set colors in [the shared theme tokens](../../frontend/src/index.css) and consume them through semantic utilities such as `bg-card`, `text-muted-foreground`, and `text-primary`. Keep ordinary panels, navigation, forms, and tables on solid surfaces. Reserve the shared blue gradient for the About, sign-in, and employee home headers.
+
+| Role | Light | Dark |
+| --- | --- | --- |
+| Page background / work area | `#FAFBFC` / `#F5F6F8` | `#10151E` / `#131B28` |
+| Card / sidebar | `#FFFFFF` / `#F7F8FA` | `#182130` / `#141E2D` |
+| Body / supporting text | `#17253D` / `#4D607B` | `#EAF1FC` / `#AABBD3` |
+| Primary / primary button text | `#2456C4` / `#FFFFFF` | `#8CB7FF` / `#102341` |
+| Selected accent / accent text | `#E3EDFF` / `#173971` | `#293D5B` / `#E6EFFF` |
+| Form control fill / border | `#FFFFFF` / `#858C96` | `#182130` / `#737C88` |
+| Gradient stops | `#EAF2FF` → `#F4F7FC` → `#FCFDFF` | `#203B63` → `#182B46` → `#141E2D` |
+
+Use blue for links, primary actions, focus rings, selected states, and intentional callouts such as the article support card. Use subtle dividers between surfaces and stronger borders and focus colors for interactive controls. Check normal text against its actual surface for at least 4.5:1 contrast, including over gradients. Keep semantic colors for ticket priority, status, and destructive actions, paired with text labels.
+
+## Help content
+
+The Help & FAQ page starts with a search field and an On this page navigation list that jumps to category headings. Search matches every entered term across the category name, question, and answer, regardless of case. The page shows matching questions and category links, reports when there are no matches, and restores all categories when the search is cleared. It renders one accordion per category from the [FAQ JSON](../../frontend/src/features/help/faq.json). Each category has an ID, label, and scope. Use `preview` for documented preview behavior and `sample` for fictional workplace guidance. Each entry has a stable, unique ID, a question, and a plain-text answer. Keep IDs when editing wording. Keep the source public and synthetic.
+
+The JSON is a candidate source for the future retrieval corpus. Review and import each question and answer together as one document, retaining its entry ID, category, and scope as metadata. Use scope to keep sample workplace guidance from being presented as application policy. Ingestion and automatic answers are tracked under [M3](../roadmap.md#m3-knowledge-and-grounded-assistance).
+
+## Service catalog
+
+The catalog keeps a grid of cards on the neutral work surface. Use solid card fills, subtle borders, muted category badges, and blue request links. Request forms use the same card treatment and shared input palette.
+
+## Knowledge articles
+
+The employee knowledge index shows a vertical list with linked article titles, categories, summaries, and last-updated dates. Use the white card surface for the light page and the near-black background surface for the dark page. Search controls follow the shared form palette. Keep the brand blue on result links. Search applies after 300 ms without typing and matches titles, summaries, categories, and article bodies. Results show ten articles per page with Previous and Next controls. Applying a new search or changing the category returns to page one.
+
+The preview bundles 18 synthetic Markdown articles from [the corpus directory](../../frontend/src/features/knowledge/articles/). Each filename becomes the stable article ID used in URLs and local drafts. Keep the filename when revising an article. Use a flat front matter block between `---` lines containing `title`, `category`, `summary`, and `updated` in `YYYY-MM-DD` format. Update the date when published content changes. The date appears on results and article pages. An optional `service` field must match an existing catalog ID and adds the corresponding request button below the article.
+
+The employee article uses a centered reading column on the same white or near-black page surface as the knowledge index. Article text sits directly on the page. Tables use a muted header, and the support card uses the blue-tinted secondary surface with a subtle blue border. The sticky article toolbar opens a right-side On this page overlay on desktop and mobile. Outline links indent by heading level, close the panel, and move focus to the selected heading. Section URLs can be shared. A left arrow precedes the Back to knowledge base link. The article body supports paragraphs, headings from `##` through `######`, flat numbered and bulleted lists, and pipe tables with a separator row and optional column alignment markers. Use the front matter title as the page heading, keep heading labels stable for shared links, and separate blocks with blank lines. Tables can scroll horizontally within the article on narrow screens. The page renders these blocks as React elements and displays raw HTML as plain text. Search includes article titles, summaries, categories, and body text. The administrator edits Markdown in the tab-local draft editor. Public article content comes from the bundled files.
+
+Every employee article ends with a Having Issues? card. It uses the same sample email and phone number as the About page and links to the device's email and phone apps. The card provides the preview's contact option while the chat assistant is planned.
+
+The source files can be reviewed for future RAG ingestion. Uploads, indexing, and publishing are tracked under [M3](../roadmap.md#m3-knowledge-and-grounded-assistance).
 
 ## Navigation, integration, and user flows
 

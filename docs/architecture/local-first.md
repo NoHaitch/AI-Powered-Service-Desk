@@ -36,7 +36,12 @@ Inspect startup and persistence using `docker compose ps` and `docker compose --
 
 For a local backup, run `docker compose exec -T postgres pg_dump -U postgres -d service_desk -Fc -f /tmp/service-desk.dump` and copy the dump to protected local storage with `docker compose cp postgres:/tmp/service-desk.dump .local/service-desk.dump`. To exercise restore on the same local cluster, create a scratch database and run `pg_restore` against it as the PostgreSQL administrator. Verify the revision and records there before considering a real restore. Follow the [database standards](../../.agents/rules/DATABASE_STANDARDS.md) for access and backup handling.
 
-Container builds, Docker networking, Redis ACL startup, and named volume persistence still need a Docker-enabled verification run. Native testing verified PostgreSQL 17.12 readiness, runtime DDL denial, and repeatable migration. Native HTTPS proxy testing verified routing, Swagger, and safe unavailable responses.
+## Verification record
+
+- PostgreSQL 17.12 and Redis 8.8.0 started with `docker compose up -d --wait --wait-timeout 120 postgres redis`. Both reported healthy. A TCP `SELECT 1` using the PostgreSQL runtime role returned `1`, and an authenticated Redis `PING` using the restricted ACL user returned `PONG`. Neither service published a host port.
+- The Vite development and Nginx runtime frontend images built and started successfully. Host HTTPS checks reached the SPA deep link at `https://localhost:8443/portal/tickets` through the Compose loopback port mapping. Nginx returned HTTP `503` for an API request while the backend was stopped.
+- Chromium exercised the same flow on both frontend targets through the forwarded port, covering visitor denial, blank-field validation, prompt-review intake, cross-owner denial, L1 triage, and the updated requester detail. The final frontend passed ESLint, the TypeScript and Vite build, and all 12 Bun tests. The browser flow used synthetic personas and tab storage.
+- Native testing previously verified PostgreSQL readiness, runtime DDL denial, repeatable migration, HTTPS proxying, and Swagger. The backend image built and passed the release HTTPS smoke check through Nginx, including API liveness, PostgreSQL readiness, Redis, SPA routing, and the docs-off setting. PostgreSQL persistence after container recreation remains pending. The latest container checks skipped migrations and schema inspection.
 
 ## Persistence and caching
 
