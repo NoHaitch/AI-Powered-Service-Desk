@@ -3,7 +3,8 @@ import { beforeEach, expect, test } from 'bun:test'
 import { personas } from '../src/features/auth/preview-personas'
 import { services, validateRequest } from '../src/features/catalog/catalog-model'
 import { submitRequest } from '../src/features/catalog/request-fixtures'
-import { articles, editDraft, readDraft } from '../src/features/knowledge/knowledge-preview'
+import { readArticle, readMarkdown } from '../src/features/knowledge/knowledge-markdown'
+import { editDraft, readDraft } from '../src/features/knowledge/knowledge-preview'
 import { canViewTicket, previewIntake, readTickets, saveReply, ticketHistory, ticketMessages } from '../src/features/tickets/ticket-preview'
 
 const [maya, jordan, alex, sam] = personas
@@ -65,8 +66,36 @@ test('shows a seeded resolution and keeps a closed conversation read-only', () =
   expect(saveReply(ticket.id, maya, 'Another reply', false)).toBe(false)
 })
 
-test('permits administrator knowledge drafts without changing published content', () => {
-  const article = articles[0]
+test('loads the Markdown corpus with safe text rendering and valid catalog links', async () => {
+  const corpus = new URL('../src/features/knowledge/articles/', import.meta.url)
+  const files = Array.from(new Bun.Glob('*.md').scanSync({ cwd: corpus.pathname }))
+  expect(files.length).toBeGreaterThan(0)
+  const articles = await Promise.all(files.map(async (file) => readArticle(file.slice(0, -3), await Bun.file(new URL(file, corpus)).text())))
+  expect(articles.every(({ updated }) => /^\d{4}-\d{2}-\d{2}$/.test(updated))).toBe(true)
+  expect(() => readArticle('invalid-date', '---\ntitle: Test\ncategory: Test\nsummary: Test\nupdated: 2026-02-30\n---\nBody')).toThrow('Invalid article update date')
+  expect(articles.filter(({ service }) => service).map(({ service }) => service).sort()).toEqual(expect.arrayContaining(['shared-drive', 'software-access']))
+  expect(articles.every(({ body }) => readMarkdown(body).some(({ type }) => type === 'heading'))).toBe(true)
+  expect(readMarkdown('## Steps\n\n1. First\n2. Second\n\n- One\n\n<img src=x>')).toEqual([
+    { type: 'heading', text: 'Steps', level: 2, id: 'section-steps' },
+    { type: 'ordered-list', start: 1, items: ['First', 'Second'] },
+    { type: 'unordered-list', items: ['One'] },
+    { type: 'paragraph', text: '<img src=x>' },
+  ])
+})
+
+test('parses heading levels, unique outline anchors, and pipe tables', () => {
+  expect(readMarkdown('## Checks\n\n### Checks\n\n#### Details\n\n| Part | Status | Count |\n| --- | :---: | ---: |\n| Cable \\| dock | OK | 2 |\n\n3. Retest')).toEqual([
+    { type: 'heading', text: 'Checks', level: 2, id: 'section-checks' },
+    { type: 'heading', text: 'Checks', level: 3, id: 'section-checks-2' },
+    { type: 'heading', text: 'Details', level: 4, id: 'section-details' },
+    { type: 'table', headers: ['Part', 'Status', 'Count'], rows: [['Cable | dock', 'OK', '2']], alignments: ['left', 'center', 'right'] },
+    { type: 'ordered-list', start: 3, items: ['Retest'] },
+  ])
+})
+
+test('permits administrator knowledge drafts without changing published content', async () => {
+  const file = new URL('../src/features/knowledge/articles/vpn-reconnect.md', import.meta.url)
+  const article = readArticle('vpn-reconnect', await Bun.file(file).text())
   const draft = { title: 'Draft title', body: 'Draft content' }
   expect(editDraft(alex, article, draft)).toBe(false)
   expect(editDraft(sam, article, { ...draft, title: ' ' })).toBe(false)

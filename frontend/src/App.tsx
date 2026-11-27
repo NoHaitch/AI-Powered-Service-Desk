@@ -7,7 +7,7 @@ import { LoginPage } from '@/features/auth/login-page'
 import { canEnter, homeFor, readPersona } from '@/features/auth/preview-personas'
 import { services } from '@/features/catalog/catalog-model'
 import { PortalHome } from '@/features/incidents/portal-home'
-import { articles } from '@/features/knowledge/knowledge-preview'
+import { articles } from '@/features/knowledge/knowledge-articles'
 import { canViewTicket, readTickets } from '@/features/tickets/ticket-preview'
 
 const WorkspaceDashboard = lazy(() => import('@/features/incidents/workspace-dashboard')
@@ -95,7 +95,9 @@ function RoutedPage() {
         <Suspense fallback={loadingPage}>
           {path === '/portal' || planned || path === '/portal/incidents/new'
             ? page
-            : <div className="flex-1 bg-desk-surface"><div className="mx-auto max-w-7xl px-5 py-8 sm:px-8">{page}</div></div>}
+            : <div className={`flex-1 ${path === '/portal/knowledge' || knowledgeMatch ? 'bg-card dark:bg-background' : 'bg-desk-surface'}`}>
+              <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8">{page}</div>
+            </div>}
         </Suspense>
       </TopLayout>
     )
