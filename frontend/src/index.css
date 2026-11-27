@@ -157,3 +157,62 @@
     @apply font-sans;
   }
 }
+
+
+@theme inline {
+  --color-desk-surface: var(--desk-surface);
+}
+
+:root {
+  --desk-surface: oklch(0.977 0.007 255);
+}
+
+.dark {
+  --desk-surface: oklch(0.18 0.018 253);
+}
+
+.login-hero, .portal-hero {
+  background-image:
+    radial-gradient(ellipse at 90% 20%, rgb(37 99 235 / 33%), transparent 63%),
+    radial-gradient(ellipse at 0% 100%, rgb(14 165 233 / 17%), transparent 65%);
+}
+
+.login-hero::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: radial-gradient(rgb(147 197 253 / 25%) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: linear-gradient(120deg, transparent 15%, black);
+  content: "";
+}
+
+.workspace-shell [data-sidebar="sidebar"],
+[data-sidebar="sidebar"][data-mobile="true"] {
+  --sidebar: oklch(0.217 0.031 254);
+  --sidebar-foreground: oklch(0.937 0.017 253);
+  --sidebar-accent: oklch(0.33 0.054 254);
+  --sidebar-accent-foreground: oklch(0.98 0.01 252);
+  --sidebar-border: oklch(0.35 0.036 254);
+  color: var(--sidebar-foreground);
+}
+
+.filter-label {
+  @apply grid gap-1.5 text-sm font-medium;
+}
+
+.desk-select {
+  @apply min-h-9 rounded-xl border border-input bg-background px-3 text-sm text-foreground;
+}
+
+.skip-link {
+  @apply sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-lg focus:bg-background focus:px-4 focus:py-2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
