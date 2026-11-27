@@ -1,0 +1,191 @@
+{
+  "categories": [
+    {
+      "id": "using-the-preview",
+      "label": "Using the preview",
+      "scope": "preview",
+      "entries": [
+        {
+          "id": "choose-account",
+          "question": "How do I sign in to the preview?",
+          "answer": "Open the sign-in page and choose a synthetic employee, L1 agent, or administrator account. Use the account menu to switch roles in the same tab."
+        },
+        {
+          "id": "where-data-goes",
+          "question": "Are preview changes sent to the service desk?",
+          "answer": "The demo keeps ticket and draft changes in the current browser tab. Use sample information while testing. Closing the tab normally ends the preview session."
+        },
+        {
+          "id": "ticket-visibility",
+          "question": "Who can see my ticket in the preview?",
+          "answer": "Employees can see their own tickets. The L1 agent can see incidents in the L1 workspace. The administrator can view aggregate counts and edit knowledge drafts."
+        },
+        {
+          "id": "knowledge-search",
+          "question": "How do I find troubleshooting instructions?",
+          "answer": "Open Knowledge in the employee portal and search for the application or symptom. Some articles link to a related service request."
+        }
+      ]
+    },
+    {
+      "id": "incidents",
+      "label": "Incidents and ticket updates",
+      "scope": "preview",
+      "entries": [
+        {
+          "id": "report-incident",
+          "question": "How do I report an IT issue?",
+          "answer": "Choose Report an incident. Describe the affected service, what you expected, what happened, and when it started. Include the effect on your work."
+        },
+        {
+          "id": "after-submission",
+          "question": "What happens after I submit an incident?",
+          "answer": "The incident appears as New in My Tickets. An L1 agent reviews impact and urgency to determine priority. After triage, the ticket shows its updated status and priority."
+        },
+        {
+          "id": "prompt-review",
+          "question": "What does Request prompt review do?",
+          "answer": "It flags your incident so L1 can filter for it. The queue remains oldest first by default. L1 still determines priority from impact and urgency."
+        },
+        {
+          "id": "track-ticket",
+          "question": "Where can I check the progress of my ticket?",
+          "answer": "Open My Tickets and search by reference or summary. Open the ticket to read replies and see updates in the activity history."
+        },
+        {
+          "id": "add-details",
+          "question": "How do I add new information to an open ticket?",
+          "answer": "Open the ticket and post a reply. Include the time of any new failure and what changed since your last update."
+        },
+        {
+          "id": "incident-or-request",
+          "question": "Should I report an incident or submit a service request?",
+          "answer": "Report an incident when a service you already use stops working. Open the catalog when you need something new, such as shared-drive access."
+        }
+      ]
+    },
+    {
+      "id": "accounts-and-access",
+      "label": "Accounts and access",
+      "scope": "sample",
+      "entries": [
+        {
+          "id": "password-reset",
+          "question": "I forgot my work password. What should I do?",
+          "answer": "Use your organization's approved password-reset page. If you cannot verify your identity there, contact your official service desk through a known channel. Keep passwords out of tickets."
+        },
+        {
+          "id": "mfa-phone",
+          "question": "What if I lose the phone I use for MFA?",
+          "answer": "Contact your official service desk to verify your identity and enroll a replacement. Mention whether the old phone was lost or replaced. Keep recovery codes private."
+        },
+        {
+          "id": "shared-drive-access",
+          "question": "How do I request access to a shared drive?",
+          "answer": "Use the Shared drive access item in the service catalog. Include the drive or folder name, the access you need, and a brief business justification."
+        },
+        {
+          "id": "permission-denied",
+          "question": "Why am I seeing an access denied message on a shared file?",
+          "answer": "Check that you signed in with the correct work account and ask the file owner to confirm your access. If the issue continues, report the file location and exact error through your approved support channel."
+        },
+        {
+          "id": "new-starter",
+          "question": "What information helps IT prepare for a new starter?",
+          "answer": "Provide the start date, team, manager, work location, and required equipment or applications through the approved onboarding request. Confirm who can approve access."
+        }
+      ]
+    },
+    {
+      "id": "connectivity",
+      "label": "Wi-Fi, VPN, and remote work",
+      "scope": "sample",
+      "entries": [
+        {
+          "id": "vpn-connect",
+          "question": "What should I check if my VPN will not connect?",
+          "answer": "Confirm that ordinary internet access works, check the VPN client's error message, and try reconnecting once. If it still fails, report the time, error text, and whether you can connect from another network."
+        },
+        {
+          "id": "wifi-drops",
+          "question": "Why does office Wi-Fi keep disconnecting?",
+          "answer": "Check whether coworkers nearby are affected. Record the building, floor, network name, and approximate times of the drops so support can identify a pattern."
+        },
+        {
+          "id": "remote-resources",
+          "question": "Why can I reach the internet but not an internal application?",
+          "answer": "Check whether the application requires a corporate VPN or an approved remote-access portal. Tell support the application name, your location, and whether other internal services work."
+        },
+        {
+          "id": "video-call-quality",
+          "question": "What can I do about choppy video calls?",
+          "answer": "Close bandwidth-heavy downloads, try a wired connection if available, and see whether the issue affects all meetings or just one. Report the meeting app, time, and network type if it continues."
+        }
+      ]
+    },
+    {
+      "id": "devices-and-apps",
+      "label": "Devices, software, and collaboration",
+      "scope": "sample",
+      "entries": [
+        {
+          "id": "laptop-slow",
+          "question": "What should I do if my laptop has become slow?",
+          "answer": "Save your work and restart when convenient. Note whether the slowdown begins with a specific application, after sign-in, or while connected to a dock. Include the device name when reporting it."
+        },
+        {
+          "id": "external-display",
+          "question": "Why is my external monitor blank?",
+          "answer": "Check the monitor's power and input selection, then reseat the video cable at both ends. Try another approved cable or port if available and report whether the monitor works with another device."
+        },
+        {
+          "id": "printer-offline",
+          "question": "What should I include in a printer ticket?",
+          "answer": "Include the printer name or asset tag, office location, and any error on the display. Mention whether other coworkers can print and whether the job is stuck in your print queue."
+        },
+        {
+          "id": "software-install",
+          "question": "How do I request software for my work laptop?",
+          "answer": "Check your organization's approved software portal first. If the app is unavailable there, submit a service request with the product name, business purpose, and any licensing or deadline details."
+        },
+        {
+          "id": "email-delivery",
+          "question": "What should I check if email is not arriving?",
+          "answer": "Check the junk folder, inbox rules, and mailbox storage. Confirm whether the problem affects all senders or just one. Share the approximate time and any delivery error with support."
+        },
+        {
+          "id": "deleted-file",
+          "question": "Can IT recover a file I deleted accidentally?",
+          "answer": "Check the recycle bin or version history in the application where you worked. If you need support, provide the file name, original location, and approximate deletion time."
+        }
+      ]
+    },
+    {
+      "id": "security-and-data",
+      "label": "Security and safe reporting",
+      "scope": "sample",
+      "entries": [
+        {
+          "id": "suspicious-email",
+          "question": "How should I report a suspicious email?",
+          "answer": "Use your organization's report-phishing feature or official security contact. Avoid opening links or attachments in the message. Mention promptly if you interacted with it or entered credentials."
+        },
+        {
+          "id": "lost-device",
+          "question": "What should I do if a company device is lost or stolen?",
+          "answer": "Contact your organization's official IT or security team promptly. Share the device type, asset tag if known, and when and where you last had it."
+        },
+        {
+          "id": "safe-screenshot",
+          "question": "Can I include a screenshot in a support report?",
+          "answer": "Use an approved support channel and remove passwords, tokens, customer details, and unrelated personal information. The preview accepts text, so describe the visible error using sample information."
+        },
+        {
+          "id": "unexpected-mfa",
+          "question": "What if I get a sign-in approval prompt I did not request?",
+          "answer": "Deny the prompt and report it through your organization's official security channel. Include the time and service named in the prompt without sharing verification codes."
+        }
+      ]
+    }
+  ]
+}

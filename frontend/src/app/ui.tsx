@@ -1,5 +1,5 @@
 import type { ComponentProps, ReactNode } from 'react'
-import { RiArrowRightUpLine, RiHeadphoneLine } from '@remixicon/react'
+import { RiHeadphoneLine } from '@remixicon/react'
 
 import { Badge } from '@/shared/components/ui/badge'
 import { buttonVariants } from '@/shared/components/ui/button'
@@ -10,7 +10,7 @@ import { ticketStatuses, type TicketStatus } from '@/features/tickets/ticket-pre
 export function Brand({ short = false }: { short?: boolean }) {
   return (
     <span className="flex min-w-0 items-center gap-2.5 whitespace-nowrap">
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white">
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
         <RiHeadphoneLine className="size-5" aria-hidden="true" />
       </span>
       {short ? null : <span className="truncate text-[15px] font-bold tracking-tight">Service Desk</span>}
@@ -74,10 +74,11 @@ export function Footer() {
   return (
     <footer className="border-t border-border py-4 text-xs text-muted-foreground">
       <div className="mx-auto flex max-w-7xl flex-wrap justify-between gap-3 px-5 sm:px-8">
-        <span>AI-Powered Service Desk</span>
-        <div className="flex gap-4">
+        <span>© {new Date().getFullYear()} NoHaitch · AI-Powered Service Desk</span>
+        <div className="flex flex-wrap gap-4">
           <a className="hover:text-foreground" href="/about">About</a>
-          <a className="hover:text-foreground" href="/help">Help <RiArrowRightUpLine className="inline size-3" /></a>
+          <a className="hover:text-foreground" href="/help">Help</a>
+          <a className="hover:text-foreground" href="https://github.com/NoHaitch/AI-Powered-Service-Desk">GitHub</a>
         </div>
       </div>
     </footer>
