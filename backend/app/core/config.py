@@ -1,7 +1,9 @@
+from ipaddress import IPv4Address, IPv6Address
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Self
+from urllib.parse import urlsplit
 
-from pydantic import Field, SecretStr, StringConstraints
+from pydantic import Field, SecretStr, StringConstraints, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import URL
 
@@ -46,6 +48,50 @@ class Settings(DatabaseSettings):
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     swagger_enabled: bool = False
     swagger_assets: Path = Path("/app/swagger")
+    auth_enabled: bool = False
+    auth_origin: str = "https://localhost:8443"
+    auth_proxy_peer: IPv4Address | IPv6Address = IPv4Address("127.0.0.1")
+    auth_access_keys: SecretStr | None = None
+    auth_refresh_keys: SecretStr | None = None
+    auth_csrf_keys: SecretStr | None = None
+    auth_limiter_key: SecretStr | None = None
+    auth_access_seconds: int = Field(default=600, ge=1, le=600)
+    auth_idle_seconds: int = Field(default=86400, ge=2, le=86400)
+    auth_absolute_seconds: int = Field(default=604800, ge=2, le=604800)
+    auth_hash_workers: int = Field(default=2, ge=1, le=8)
+    auth_login_total: int = Field(default=120, ge=1, le=10000)
+    auth_login_source: int = Field(default=60, ge=1, le=10000)
+    auth_login_identifier_source: int = Field(default=5, ge=1, le=1000)
+    auth_login_signal: int = Field(default=15, ge=1, le=1000)
+    auth_refresh_total: int = Field(default=300, ge=1, le=10000)
+    auth_refresh_source: int = Field(default=30, ge=1, le=10000)
+    auth_refresh_family: int = Field(default=6, ge=1, le=1000)
+    auth_admission_window_seconds: int = Field(default=60, ge=1, le=60)
+    auth_login_window_seconds: int = Field(default=300, ge=1, le=300)
+    auth_signal_window_seconds: int = Field(default=900, ge=1, le=900)
+    auth_recovery_seconds: int = Field(default=300, ge=1, le=3600)
+
+    @model_validator(mode="after")
+    def validate_authentication(self) -> Self:
+        if not self.auth_enabled:
+            return self
+        origin = urlsplit(self.auth_origin)
+        if (
+            origin.scheme != "https"
+            or not origin.hostname
+            or origin.username is not None
+            or self.auth_origin != f"https://{origin.netloc}"
+            or origin.port == 443
+            or self.auth_origin != self.auth_origin.lower()
+        ):
+            raise ValueError("Authentication requires a canonical HTTPS origin.")
+        if not self.auth_access_seconds < self.auth_idle_seconds <= self.auth_absolute_seconds:
+            raise ValueError("Invalid credential lifetimes.")
+        if self.auth_recovery_seconds < max(
+            self.auth_admission_window_seconds, self.auth_login_window_seconds
+        ):
+            raise ValueError("Limiter recovery must cover the longest enforced window.")
+        return self
 
 
 class MigrationSettings(DatabaseSettings):

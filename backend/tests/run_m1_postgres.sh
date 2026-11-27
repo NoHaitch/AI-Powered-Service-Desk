@@ -56,9 +56,8 @@ for path in fresh baseline; do
     uv run --locked alembic upgrade head
   fi
 
-  cat > "$scratch/passwords.json" <<'JSON'
-{"maya":"Synthetic password for maya","jordan":"Synthetic password for jordan","alex":"Synthetic password for alex","sam":"Synthetic password for sam"}
-JSON
+  uv run --locked python -c 'import json; from app.seed import PERSONAS; print(json.dumps(
+      {name: f"Synthetic password for {name}" for name, _, _ in PERSONAS}))' > "$scratch/passwords.json"
   if uv run --locked python -m app.seed --development < "$scratch/passwords.json"; then
     printf 'Seeder accepted an unmarked database.\n' >&2
     exit 1

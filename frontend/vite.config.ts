@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import react from '@vitejs/plugin-react'
@@ -17,7 +18,35 @@ export default defineConfig({
     https: certificate && privateKey
       ? { cert: readFileSync(certificate), key: readFileSync(privateKey) }
       : undefined,
-    proxy: backendOrigin ? { '^/api(?:/|$)': backendOrigin } : undefined,
+    headers: {
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'Referrer-Policy': 'no-referrer',
+    },
+    proxy: backendOrigin ? {
+      '^/api(?:/|$)': {
+        target: backendOrigin,
+        proxyTimeout: 10000,
+        configure(proxy) {
+          proxy.on('proxyReq', (outgoing, incoming) => {
+            outgoing.removeHeader('Forwarded')
+            outgoing.removeHeader('X-Forwarded-For')
+            outgoing.setHeader('X-Desk-Client-Address', incoming.socket.remoteAddress ?? '')
+          })
+          proxy.on('error', (_error, _incoming, outgoing) => {
+            if (!('writeHead' in outgoing) || outgoing.headersSent || outgoing.writableEnded) return
+            const requestId = randomUUID()
+            outgoing.writeHead(503, {
+              'Content-Type': 'application/json',
+              'Cache-Control': 'no-store',
+              'X-Request-ID': requestId,
+            }).end(JSON.stringify({
+              code: 'unavailable', message: 'The API is unavailable.', request_id: requestId,
+            }))
+          })
+        },
+      },
+    } : undefined,
   },
   resolve: {
     alias: {

@@ -22,7 +22,7 @@ from app.attachments.config import AttachmentSettings
 from app.attachments.service import AttachmentService
 from app.attachments.storage import AttachmentError, LocalStorage
 from app.identity.models import User
-from app.seed import MARKER, PERSONAS, seed, seed_id
+from app.seed import DISABLED_USERS, L1_USERS, MARKER, PERSONAS, seed, seed_id
 from app.tickets.schemas import IncidentCreate
 
 TICKET_SQL = """
@@ -125,12 +125,15 @@ def test_seed_preserves_rows_and_restricts_queue_access(
     pg: dict[str, str | int], seeded: None
 ) -> None:
     with connect(pg, "migrator") as conn:
-        assert conn.execute("SELECT count(*) FROM desk.users").fetchone() == (4,)
+        assert conn.execute("SELECT count(*) FROM desk.users").fetchone() == (len(PERSONAS),)
         assert conn.execute("SELECT count(*) FROM desk.tickets").fetchone() == (2,)
         assert conn.execute("SELECT count(*) FROM desk.incident_audit_events").fetchone() == (3,)
-        assert conn.execute("SELECT user_id FROM desk.queue_memberships").fetchall() == [
-            (seed_id("user:alex"),)
-        ]
+        assert set(conn.execute("SELECT user_id FROM desk.queue_memberships").fetchall()) == {
+            (seed_id(f"user:{name}"),) for name in L1_USERS
+        }
+        assert set(
+            conn.execute("SELECT username FROM desk.users WHERE disabled_at IS NOT NULL").fetchall()
+        ) == {(name,) for name in DISABLED_USERS | {"maya"}}
         assert conn.execute(
             "SELECT revision FROM desk.tickets WHERE id = %s", (seed_id("ticket:monitor"),)
         ).fetchone() == (2,)

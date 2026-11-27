@@ -11,7 +11,12 @@ _TRIM = (
 
 
 def _trim(value: object) -> object:
-    return value.strip(_TRIM) if isinstance(value, str) else value
+    if not isinstance(value, str):
+        return value
+    if "\x00" in value:
+        raise ValueError("Incident text contains an unsupported character.")
+    value.encode("utf-8")
+    return value.strip(_TRIM)
 
 
 class IncidentCreate(BaseModel):

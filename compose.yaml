@@ -19,7 +19,9 @@ services:
       target: runtime
     ports:
       - "127.0.0.1:${DESK_HTTPS_PORT:-8443}:8443"
-    networks: [edge]
+    networks:
+      edge:
+        ipv4_address: "${DESK_AUTH_PROXY_PEER:-172.28.249.2}"
     volumes:
       - ./infrastructure/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     secrets: [local_tls_cert, local_tls_key]
@@ -39,11 +41,22 @@ services:
       <<: *postgres-env
       DESK_REDIS_HOST: redis
       DESK_SWAGGER_ENABLED: "${DESK_SWAGGER_ENABLED:-false}"
+      DESK_AUTH_ENABLED: "true"
+      DESK_AUTH_ORIGIN: "${DESK_AUTH_ORIGIN:-https://localhost:${DESK_HTTPS_PORT:-8443}}"
+      DESK_AUTH_PROXY_PEER: "${DESK_AUTH_PROXY_PEER:-172.28.249.2}"
     secrets:
       - source: desk_runtime_password
         target: DESK_DB_PASSWORD
       - source: desk_redis_password
         target: DESK_REDIS_PASSWORD
+      - source: desk_auth_access_keys
+        target: DESK_AUTH_ACCESS_KEYS
+      - source: desk_auth_refresh_keys
+        target: DESK_AUTH_REFRESH_KEYS
+      - source: desk_auth_csrf_keys
+        target: DESK_AUTH_CSRF_KEYS
+      - source: desk_auth_limiter_key
+        target: DESK_AUTH_LIMITER_KEY
     volumes:
       - attachment_data:/var/lib/service-desk/attachments
     networks: [edge, data]
@@ -103,6 +116,10 @@ services:
 
 networks:
   edge:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "${DESK_AUTH_PROXY_SUBNET:-172.28.249.0/24}"
   data:
     internal: true
 
@@ -112,16 +129,24 @@ volumes:
 
 secrets:
   postgres_admin_password:
-    file: ./.local/postgres_admin_password
+    file: "${DESK_LOCAL_SECRET_DIR:-./.local}/postgres_admin_password"
   desk_runtime_password:
-    file: ./.local/desk_runtime_password
+    file: "${DESK_LOCAL_SECRET_DIR:-./.local}/desk_runtime_password"
   desk_migration_password:
-    file: ./.local/desk_migration_password
+    file: "${DESK_LOCAL_SECRET_DIR:-./.local}/desk_migration_password"
   desk_redis_password:
-    file: ./.local/desk_redis_password
+    file: "${DESK_LOCAL_SECRET_DIR:-./.local}/desk_redis_password"
+  desk_auth_access_keys:
+    file: "${DESK_LOCAL_SECRET_DIR:-./.local}/desk_auth_access_keys"
+  desk_auth_refresh_keys:
+    file: "${DESK_LOCAL_SECRET_DIR:-./.local}/desk_auth_refresh_keys"
+  desk_auth_csrf_keys:
+    file: "${DESK_LOCAL_SECRET_DIR:-./.local}/desk_auth_csrf_keys"
+  desk_auth_limiter_key:
+    file: "${DESK_LOCAL_SECRET_DIR:-./.local}/desk_auth_limiter_key"
   redis_acl:
-    file: ./.local/redis_acl
+    file: "${DESK_LOCAL_SECRET_DIR:-./.local}/redis_acl"
   local_tls_cert:
-    file: ./.local/local-tls.crt
+    file: "${DESK_LOCAL_SECRET_DIR:-./.local}/local-tls.crt"
   local_tls_key:
-    file: ./.local/local-tls.key
+    file: "${DESK_LOCAL_SECRET_DIR:-./.local}/local-tls.key"

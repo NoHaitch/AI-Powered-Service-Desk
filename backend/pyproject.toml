@@ -10,6 +10,7 @@ dependencies = [
     "pwdlib[argon2]>=0.4.2",
     "pydantic>=2.12,<3",
     "pydantic-settings>=2.13,<3",
+    "pyjwt>=2.13,<3",
     "redis>=7,<9",
     "sqlalchemy[asyncio]>=2.0,<2.1",
     "uvicorn>=0.41,<1",

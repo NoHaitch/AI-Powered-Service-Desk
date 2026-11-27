@@ -7,7 +7,9 @@ import shutil
 import subprocess
 from pathlib import Path
 
-LOCAL = Path(__file__).resolve().parents[1] / ".local"
+LOCAL = Path(os.environ.get(
+    "DESK_LOCAL_SECRET_DIR", Path(__file__).resolve().parents[1] / ".local",
+)).resolve()
 
 
 def save_once(path: Path, value: str) -> None:
@@ -32,11 +34,23 @@ def main() -> None:
     ):
         save_once(LOCAL / name, secrets.token_urlsafe(36))
 
+    for purpose in ("access_keys", "refresh_keys", "csrf_keys", "limiter_key"):
+        save_once(LOCAL / f"desk_auth_{purpose}", f"v1:{secrets.token_hex(32)}")
+
     password = (LOCAL / "desk_redis_password").read_text(encoding="utf-8").strip()
     digest = hashlib.sha256(password.encode()).hexdigest()
     acl = LOCAL / "redis_acl"
-    save_once(acl, f"user default off\nuser desk on #{digest} ~limiter:* -@all +ping")
-    if f"#{digest}" not in acl.read_text(encoding="utf-8"):
+    baseline = f"user default off\nuser desk on #{digest} ~limiter:* -@all +ping"
+    desired = f"{baseline} +eval +get +set +pttl +incr"
+    save_once(acl, desired)
+    current = acl.read_text(encoding="utf-8").rstrip("\n")
+    if current == baseline:
+        staged = LOCAL / "redis_acl.upgrade"
+        save_once(staged, desired)
+        if staged.read_text(encoding="utf-8").strip() != desired:
+            raise SystemExit("A Redis ACL upgrade file already exists with different contents.")
+        staged.replace(acl)
+    elif current != desired:
         raise SystemExit("Redis password and ACL do not match. Restore the matching local files.")
 
     cert, key = LOCAL / "local-tls.crt", LOCAL / "local-tls.key"

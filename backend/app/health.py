@@ -71,3 +71,7 @@ async def ready(request: Request) -> HealthStatus | JSONResponse:
 @router.get("/redis", response_model=HealthStatus, responses=unavailable)
 async def redis(request: Request) -> HealthStatus | JSONResponse:
     return await probe(request, "redis", lambda: redis_ping(request.app.state.redis))
+
+
+async def auth_health(request: Request) -> HealthStatus | JSONResponse:
+    return await probe(request, "auth_limiter", request.app.state.auth_limiter.healthy)

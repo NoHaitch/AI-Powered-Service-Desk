@@ -1,6 +1,7 @@
 """Opt-in local seed command. Read synthetic passwords from standard input."""
 
 import argparse
+import getpass
 import json
 import sys
 from datetime import UTC, datetime
@@ -19,9 +20,19 @@ from app.tickets.models import IncidentDetail, QueueMembership, SupportQueue, Ti
 PERSONAS = (
     ("maya", "Maya Chen", "employee"),
     ("jordan", "Jordan Lee", "employee"),
+    ("priya", "Priya Shah", "employee"),
     ("alex", "Alex Morgan", "agent"),
+    ("casey", "Casey Brooks", "agent"),
+    ("riley", "Riley Nguyen", "agent"),
+    ("mina", "Mina Park", "agent"),
+    ("drew", "Drew Okafor", "agent"),
     ("sam", "Sam Rivera", "administrator"),
+    ("avery", "Avery Tan", "administrator"),
+    ("taylor", "Taylor Gomez", "employee"),
+    ("quinn", "Quinn Murphy", "agent"),
 )
+L1_USERS = frozenset({"alex", "casey", "quinn"})
+DISABLED_USERS = frozenset({"taylor", "quinn"})
 MARKER = "service-desk-development-seed"
 SEED_LOCK = 876189423
 
@@ -30,8 +41,14 @@ def seed_id(name: str) -> UUID:
     return uuid5(NAMESPACE_URL, f"urn:service-desk:development:{name}")
 
 
-def read_passwords() -> dict[str, str]:
-    raw = json.loads(sys.stdin.read(8193))
+def read_passwords(prompt: bool = False) -> dict[str, str]:
+    if prompt and not sys.stdin.isatty():
+        raise ValueError("Interactive provisioning requires a terminal.")
+    raw = (
+        {username: getpass.getpass(f"Password for {username}: ") for username, _, _ in PERSONAS}
+        if prompt
+        else json.loads(sys.stdin.read(16385))
+    )
     if not isinstance(raw, dict) or raw.keys() != {username for username, _, _ in PERSONAS}:
         raise ValueError("Supply one private password for each synthetic persona.")
     passwords: dict[str, str] = {}
@@ -81,11 +98,12 @@ def seed(session: Session, passwords: dict[str, str]) -> None:
                 username=username,
                 display_name=display_name,
                 password_hash=hasher.hash(passwords[username]),
+                disabled_at=datetime.now(UTC) if username in DISABLED_USERS else None,
             )
         )
         session.flush()
         session.add(UserRole(user_id=user_id, role_id=roles[role_code].id))
-        if role_code == "agent":
+        if username in L1_USERS:
             session.add(QueueMembership(user_id=user_id, queue_id=queue.id))
     session.flush()
 
@@ -169,10 +187,12 @@ def seed(session: Session, passwords: dict[str, str]) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--development", action="store_true", help="Opt in to development seeding.")
-    if not parser.parse_args().development:
+    parser.add_argument("--prompt", action="store_true", help="Read passwords from a terminal.")
+    args = parser.parse_args()
+    if not args.development:
         parser.error("--development is required.")
     try:
-        passwords = read_passwords()
+        passwords = read_passwords(args.prompt)
         config = load_migration_settings()
         if config.db_host not in {"localhost", "127.0.0.1", "::1", "postgres"}:
             raise ValueError("Use local PostgreSQL for development seeding.")

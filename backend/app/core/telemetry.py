@@ -60,6 +60,9 @@ async def log_request(request: Request, call_next: RequestResponseEndpoint) -> R
         )
         response = error_response(request, 500, "internal_error", "An unexpected error occurred.")
     response.headers["X-Request-ID"] = request_id
+    if request.url.path.startswith("/api/v1/"):
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["X-Content-Type-Options"] = "nosniff"
     outcome = "success"
     if response.status_code >= 500:
         outcome = "server_error"
