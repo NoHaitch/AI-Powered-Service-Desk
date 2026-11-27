@@ -15,6 +15,8 @@ Organize code around clear responsibilities. Use MVC or a similar layered struct
 
 ## TypeScript and frontend
 
+- Use the installed [shadcn/ui components and project preset](../../frontend/README.md#ui-components) for standard UI primitives. Check `frontend/src/shared/components/ui/` first. Compose those primitives in features before adding a duplicate. Add missing primitives through the configured registry when suitable and preserve the Tailwind theme tokens.
+
 - Use Bun for frontend dependency management, development, builds, and local verification. Include the Bun lockfile in changes that introduce JavaScript or TypeScript dependencies.
 
 - Enable strict TypeScript at initialization. Justify any use of `any`. Use PascalCase for React components and types, camelCase for functions, variables and hooks, and consistent filenames.

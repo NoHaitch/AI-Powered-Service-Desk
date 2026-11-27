@@ -71,7 +71,7 @@ The [roadmap](../docs/roadmap.md#release-targets) defines the agreed release seq
 
 | Layer | Preferred choice | Notes |
 | --- | --- | --- |
-| Web | React, Vite, TypeScript, Bun | Same-origin HTTPS with the Vite development proxy and Nginx preferred for local release. Tailwind CSS and shadcn/ui remain candidates. |
+| Web | React, Vite, TypeScript, Bun, Tailwind CSS, shadcn/ui | See the [frontend guide](../frontend/README.md). Same-origin HTTPS with a Vite development proxy and Nginx for local releases remains the full-stack design. |
 | Client data | TanStack Query | React Hook Form and Zod where useful |
 | API | Python, FastAPI, Pydantic | OpenAPI contracts, uv dependency management |
 | Auth | Stateless JWT access verification and rotating opaque refresh cookies | [Accepted credential policy](../docs/decisions/0003-stateless-access-and-refresh-rotation.md). FastAPI owns authorization. |

@@ -17,7 +17,7 @@ Hosted deployment remains optional (M6).
 | ID | Milestone | Status | Depends on | Priority and release role |
 | --- | --- | --- | --- | --- |
 | M0 | [Product planning](#m0-product-planning) | Done | Repository workflow established | First-slice baseline approved |
-| M1 | [Application foundation](#m1-application-foundation) | Planned | Explicit scaffolding authorization | Next, functional MVP |
+| M1 | [Application foundation](#m1-application-foundation) | Active | Frontend initialization authorized | Functional MVP |
 | M2 | [Functional service desk](#m2-functional-service-desk) | Planned | M1 | Functional MVP |
 | M3 | [Knowledge and grounded assistance](#m3-knowledge-and-grounded-assistance) | Planned | M2 | Basic knowledge management for the functional MVP, then grounded assistance for the AI-powered MVP |
 | M4 | [Routing and controlled workflows](#m4-routing-and-controlled-workflows) | Deferred | Stable ticket data for classification. Grounded assistance and approved tool boundaries for evidence-dependent workflows. | Advanced AI engineering |
@@ -43,6 +43,8 @@ Hosted deployment remains optional (M6).
 **Completion gate met.** The first-slice requirements and policy decisions are approved, and the linked contracts, threat model, and verification plan reflect them. M1 awaits separate authorization to scaffold.
 
 ## M1 Application foundation
+
+- [x] Initialize the [frontend](../frontend/README.md) with React, Vite, Tailwind CSS, and shared shadcn/ui primitives.
 
 - [ ] Establish the React/Vite frontend, FastAPI, and PostgreSQL containers using Docker Compose, with safe configuration examples and reusable local checks. Use Bun for frontend tooling and distinguish development targets from release images.
 - [ ] Implement the [observability foundations](architecture/observability.md) with the first API slice and Compose services. Verify structured logs, correlation, redaction, liveness, and readiness without a collector.

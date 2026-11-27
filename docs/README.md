@@ -1,6 +1,6 @@
 # Project documentation
 
-M0 product planning is complete. M1 application foundation is next and awaits implementation authorization. The [project README](../README.md) describes the application and its current scope.
+M0 product planning is complete and the M1 frontend foundation is in progress. The [project README](../README.md) describes the application and its current scope. The [frontend guide](../frontend/README.md) covers the Vite, Tailwind CSS, and shadcn/ui setup.
 
 See the [Git and release workflow](git-and-releases.md) for branch roles, the local merge gate, and manual releases.
 

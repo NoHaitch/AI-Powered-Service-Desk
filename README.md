@@ -38,7 +38,7 @@ AI-Powered Service Desk is a local-first IT service management application in pl
 
 ## Features
 
-**Current status:** The repository contains product and technical documentation. Application features are planned.
+**Current status:** The frontend foundation can run locally and includes a UI component preview. The service desk workflows below are planned.
 
 | Release target | Planned capabilities |
 | --- | --- |
@@ -65,7 +65,7 @@ The planned browser entry point uses same-origin HTTPS, with Vite proxying in de
 | Area | Direction |
 | --- | --- |
 | Local deployment | Docker Compose, with zero mandatory infrastructure costs. Public hosting is optional. |
-| Frontend | React, Vite, and TypeScript for a client-rendered UI. Bun for dependency management, development, and builds. |
+| Frontend | React, Vite, and TypeScript with Tailwind CSS through its Vite plugin and shadcn/ui components. Bun manages dependencies and runs development and build scripts. |
 | Backend | Python and FastAPI. SQLAlchemy 2.x with Psycopg 3 async, Alembic migrations, and Pydantic validation. |
 | Persistence and operational state | PostgreSQL for durable data. Redis for planned rate limiting and caching. |
 | Identity | Stateless JWT access verification and rotating opaque refresh cookies. |
@@ -73,14 +73,14 @@ The planned browser entry point uses same-origin HTTPS, with Vite proxying in de
 
 ## Getting started
 
-Initial product planning is complete. Application scaffolding and runnable setup are pending. Start with the [documentation index](docs/README.md).
+Initial product planning is complete. See the [frontend guide](frontend/README.md) to run the UI locally. Full-stack setup is pending.
 
 | Step | Current status |
 | --- | --- |
-| Prerequisites | Docker with Compose is planned for the local deployment. Supported versions will be documented once verified. |
-| Installation | Pending application scaffolding and dependency setup. |
-| Environment configuration | Pending runtime settings and an example configuration. |
-| Running the application | Startup instructions will be published once the local application can run from a clean checkout. |
+| Prerequisites | Bun for frontend development. Docker Compose is planned for the full local stack. |
+| Installation | Install frontend dependencies from the Bun lockfile. See the [frontend guide](frontend/README.md). |
+| Environment configuration | The frontend component preview requires no environment variables. Full-stack configuration is pending. |
+| Running the application | Start the local Vite development server described in the [frontend guide](frontend/README.md). |
 
 ## Usage
 
@@ -88,12 +88,13 @@ The first planned workflow lets a signed-in employee submit an incident and trac
 
 ## Testing and verification
 
-Application test commands are pending. The verification plan covers domain rules, API access boundaries, end-to-end workflows, and backend capacity. The [Git and release workflow](docs/git-and-releases.md#local-merge-gate) describes the local checks required before merging to `main`.
+The frontend has lint and build checks, including TypeScript compilation. See the [frontend verification commands](frontend/README.md#verification). Full-stack tests will cover domain rules, API access boundaries, end-to-end workflows, and backend capacity. The [Git and release workflow](docs/git-and-releases.md#local-merge-gate) describes the local checks required before merging to `main`.
 
 ## Project structure
 
 | Path | Contents |
 | --- | --- |
+| [Frontend](frontend/README.md) | Vite application, Tailwind theme, and shared shadcn/ui components. |
 | [Documentation](docs/README.md) | Roadmap, requirements, architecture proposals, and release workflow. |
 | [Repository instructions](AGENTS.md) | Development and verification conventions. |
 | [Agent workflow](.agents/README.md) | Project context, engineering standards, and reusable skills. |
