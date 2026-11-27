@@ -14,7 +14,13 @@ from app.core.config import Settings
 
 
 class Base(DeclarativeBase):
-    metadata = MetaData(schema="desk")
+    metadata = MetaData(
+        schema="desk",
+        naming_convention={
+            "pk": "pk_%(table_name)s",
+            "fk": "fk_%(table_name)s_%(column_0_name)s",
+        },
+    )
 
 
 def make_engine(settings: Settings) -> AsyncEngine:

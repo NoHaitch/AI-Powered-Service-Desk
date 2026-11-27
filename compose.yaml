@@ -44,6 +44,8 @@ services:
         target: DESK_DB_PASSWORD
       - source: desk_redis_password
         target: DESK_REDIS_PASSWORD
+    volumes:
+      - attachment_data:/var/lib/service-desk/attachments
     networks: [edge, data]
     depends_on:
       postgres:
@@ -65,6 +67,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./infrastructure/postgres/10-init.sh:/docker-entrypoint-initdb.d/10-init.sh:ro
+      - ./infrastructure/postgres/20-audit-maintenance.sql:/docker-entrypoint-initdb.d/20-audit-maintenance.sql:ro
     healthcheck:
       test: [CMD, pg_isready, -h, 127.0.0.1, -U, postgres, -d, service_desk]
       interval: 5s
@@ -105,6 +108,7 @@ networks:
 
 volumes:
   postgres_data:
+  attachment_data:
 
 secrets:
   postgres_admin_password:

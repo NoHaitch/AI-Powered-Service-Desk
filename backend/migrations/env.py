@@ -3,6 +3,7 @@ from contextlib import nullcontext
 from alembic import context
 from sqlalchemy import create_engine, pool
 
+from app.core import models as models
 from app.core.config import load_migration_settings
 from app.core.database import Base
 

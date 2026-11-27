@@ -16,6 +16,7 @@ COPY --from=swagger /usr/share/nginx/html/swagger-ui-bundle.js /usr/share/nginx/
 COPY app ./app
 COPY alembic.ini ./
 COPY migrations ./migrations
+RUN install -d -m 0700 -o 10001 -g 10001 /var/lib/service-desk/attachments
 USER 10001:10001
 EXPOSE 8000
 CMD ["uvicorn", "app.main:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000", "--no-access-log", "--no-proxy-headers"]
