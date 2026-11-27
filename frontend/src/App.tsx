@@ -8,6 +8,7 @@ import { canEnter, homeFor, readPersona } from '@/features/auth/preview-personas
 import { services } from '@/features/catalog/catalog-model'
 import { PortalHome } from '@/features/incidents/portal-home'
 import { articles } from '@/features/knowledge/knowledge-articles'
+import { Spinner } from '@/shared/components/ui/spinner'
 import { canViewTicket, readTickets } from '@/features/tickets/ticket-preview'
 
 const WorkspaceDashboard = lazy(() => import('@/features/incidents/workspace-dashboard')
@@ -26,7 +27,11 @@ const KnowledgeEditor = lazy(() => import('@/features/knowledge/knowledge-pages'
 const ProfilePage = lazy(() => import('@/features/account/account-pages').then(({ ProfilePage }) => ({ default: ProfilePage })))
 const NotificationsPage = lazy(() => import('@/features/account/account-pages').then(({ NotificationsPage }) => ({ default: NotificationsPage })))
 
-const loadingPage = <p role="status" className="px-5 py-8 text-sm text-muted-foreground">Loading page…</p>
+const loadingPage = (
+  <div className="grid min-h-48 flex-1 place-items-center px-5 py-8">
+    <Spinner aria-label="Loading page" className="size-7 text-primary" />
+  </div>
+)
 
 const plannedPortal = new Map([
   ['/portal/assistant', ['AI assistant', 'Grounded answers with sources will be introduced in the AI-powered MVP.']],
