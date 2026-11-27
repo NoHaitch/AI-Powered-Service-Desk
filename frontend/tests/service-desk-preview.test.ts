@@ -1,8 +1,8 @@
 import { beforeEach, expect, test } from 'bun:test'
 
 import { personas } from '../src/features/auth/preview-personas'
-import { services, validateRequest } from '../src/features/catalog/catalog-model'
-import { submitRequest } from '../src/features/catalog/request-fixtures'
+import { services, validateRequest, validateServiceFields } from '../src/features/catalog/catalog-model'
+import { readRequests, submitRequest } from '../src/features/catalog/request-fixtures'
 import { readArticle, readMarkdown } from '../src/features/knowledge/knowledge-markdown'
 import { editDraft, readDraft } from '../src/features/knowledge/knowledge-preview'
 import { canViewTicket, previewIntake, readTickets, saveReply, ticketHistory, ticketMessages } from '../src/features/tickets/ticket-preview'
@@ -33,6 +33,20 @@ test('keeps a submitted request visible to its requester and out of the L1 incid
   expect(canViewTicket(ticket, jordan)).toBe(false)
   expect(canViewTicket(ticket, alex)).toBe(false)
   expect(previewIntake(readTickets()).some(({ id }) => id === ticket.id)).toBe(false)
+})
+
+test('requires a valid end date for temporary VPN requests and retains submitted service details', () => {
+  const vpn = services.find(({ id }) => id === 'vpn-access')!
+  const input = { device: 'Company-managed laptop', duration: 'Temporary' }
+  expect(validateServiceFields(vpn, input).errors.endDate).toBe('This field is required.')
+  expect(validateServiceFields(vpn, { ...input, duration: 'Unknown' }).errors.duration).toBeTruthy()
+  expect(validateServiceFields(vpn, { ...input, endDate: '2026-02-30' }).errors.endDate).toBeTruthy()
+  expect(submitRequest(maya, vpn, 'Work portal', 'Hybrid work', input)).toBeUndefined()
+  const request = submitRequest(maya, vpn, 'Work portal', 'Hybrid work',
+    { ...input, endDate: '2026-12-10', unrecognized: 'discard this' })
+  expect(request?.details).toEqual({ ...input, endDate: '2026-12-10' })
+  expect(readRequests().find(({ id }) => id === request?.id)).toEqual(request!)
+  expect(readRequests().find(({ id }) => id === 'REQ-2001')?.details).toBeUndefined()
 })
 
 test('keeps request and reply failures from reporting success', () => {

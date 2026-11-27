@@ -1,7 +1,8 @@
-import { RiCheckLine } from '@remixicon/react'
+import { RiCheckLine, RiUserLine } from '@remixicon/react'
 
 import { ActionLink, PageHeading, PriorityBadge, StatusBadge } from '@/app/ui'
 import type { Persona } from '@/features/auth/preview-personas'
+import { services } from '@/features/catalog/catalog-model'
 import { TriageForm } from '@/features/incidents/triage-form'
 import { Alert, AlertDescription, AlertTitle } from '@/shared/components/ui/alert'
 import { Badge } from '@/shared/components/ui/badge'
@@ -13,6 +14,13 @@ export function TicketDetail({ ticket, persona }: { ticket: PreviewTicket; perso
   const staff = persona.role === 'agent'
   const result = new URLSearchParams(location.search).get('result')
   const incident = ticket.source.kind === 'incident' ? ticket.source.incident : undefined
+  const assignee = ticket.status === 'inProgress' && ticket.assigneeId ? personaName(ticket.assigneeId) : undefined
+  const request = ticket.source.kind === 'request' ? ticket.source.request : undefined
+  const requestFields = services.find(({ id }) => id === request?.serviceId)?.fields ?? []
+  const details = requestFields.flatMap(({ id, label }) => {
+    const value = request?.details?.[id]
+    return value ? [{ id, label, value }] : []
+  })
   const confirmation = staff && result === 'triaged' && incident?.status === 'triaged' ? 'Triage saved in this tab.'
     : !staff && result === 'created' && incident ? 'Incident reported in this tab.'
     : !staff && result === 'requested' && !incident ? 'Service request saved in this tab.' : undefined
@@ -23,7 +31,17 @@ export function TicketDetail({ ticket, persona }: { ticket: PreviewTicket; perso
         <ActionLink variant="ghost" href={staff ? '/workspace/tickets' : '/portal/tickets'}>{staff ? 'All tickets' : 'My Tickets'}</ActionLink>
         <span aria-hidden="true">/</span><span className="font-mono text-xs" aria-current="page">{ticket.id}</span>
       </nav>
-      <PageHeading title={ticket.summary} description={`${incident ? 'Incident' : 'Service request'} ${ticket.id} · ${ticketDate.format(new Date(ticket.createdAt))}`}
+      <PageHeading title={ticket.summary} description={(
+        <span className="inline-flex flex-wrap items-center gap-x-4 gap-y-1">
+          <span>{incident ? 'Incident' : 'Service request'} {ticket.id} · {ticketDate.format(new Date(ticket.createdAt))}</span>
+          {assignee && (
+            <span className="inline-flex items-center gap-1.5">
+              <RiUserLine className="size-4 shrink-0" aria-hidden="true" />
+              <span>Assigned to <strong className="font-semibold text-foreground">{assignee}</strong></span>
+            </span>
+          )}
+        </span>
+      )}
         actions={<StatusBadge status={ticket.status} />} />
       {confirmation && <Alert role="status"><RiCheckLine aria-hidden="true" /><AlertTitle>{confirmation}</AlertTitle></Alert>}
       <div className={staff ? 'grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_19rem]' : 'grid gap-4'}>
@@ -36,6 +54,16 @@ export function TicketDetail({ ticket, persona }: { ticket: PreviewTicket; perso
                 {incident?.promptReview && <Badge variant="outline">Prompt review</Badge>}
               </div>
               <p className="whitespace-pre-wrap wrap-break-word text-sm leading-relaxed">{ticket.description}</p>
+              {details.length > 0 && (
+                <dl className="grid gap-3 border-t border-border pt-4 text-sm sm:grid-cols-2">
+                  {details.map(({ id, label, value }) => (
+                    <div key={id} className="min-w-0">
+                      <dt className="text-muted-foreground">{label}</dt>
+                      <dd className="wrap-break-word font-medium">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
             </CardContent>
           </Card>
           {ticket.resolution && <Card>

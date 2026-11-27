@@ -1,6 +1,6 @@
 import type { Persona } from '@/features/auth/preview-personas'
 import { isRecord, readPreview, writePreview } from '@/shared/lib/preview-storage'
-import { services, validateRequest, type Service, type ServiceRequest } from './catalog-model'
+import { services, validateRequest, validateServiceFields, type Service, type ServiceRequest } from './catalog-model'
 
 const key = 'service-desk.preview.requests.v1'
 const seed: ServiceRequest[] = [{
@@ -12,19 +12,22 @@ function isRequest(value: unknown): value is ServiceRequest {
   return isRecord(value) && services.some(({ id }) => id === value.serviceId)
     && ['id', 'requesterId', 'item', 'justification'].every((field) => typeof value[field] === 'string')
     && typeof value.createdAt === 'string' && Number.isFinite(Date.parse(value.createdAt))
+    && (value.details === undefined || (isRecord(value.details) && Object.values(value.details).every((detail) => typeof detail === 'string')))
 }
 
 export function readRequests() {
   return readPreview(key, (value): value is ServiceRequest[] => Array.isArray(value) && value.every(isRequest), seed)
 }
 
-export function submitRequest(persona: Persona, service: Service, item: string, justification: string) {
+export function submitRequest(persona: Persona, service: Service, item: string, justification: string, input: Record<string, unknown> = {}) {
   const { values, errors } = validateRequest(item, justification)
   if (persona.role !== 'employee' || errors.item || errors.justification) return
+  const extra = validateServiceFields(service, input)
+  if (Object.keys(extra.errors).length) return
   const requests = readRequests()
   const request: ServiceRequest = {
     ...values, id: 'REQ-' + crypto.randomUUID().slice(0, 8).toUpperCase(), serviceId: service.id,
-    requesterId: persona.id, createdAt: new Date().toISOString(),
+    requesterId: persona.id, createdAt: new Date().toISOString(), details: extra.values,
   }
   if (requests.some(({ id }) => id === request.id)) return
   if (writePreview(key, [...requests, request])) return request
