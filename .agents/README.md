@@ -14,6 +14,7 @@ Start with the [repository instructions](../AGENTS.md). Open only the entries re
 | Data integrity and persistence | [Database standards](rules/DATABASE_STANDARDS.md) |
 | Monorepo layout and component ownership | [Repository structure](rules/REPOSITORY_STRUCTURE.md) |
 | Reusable, task-specific workflows | [Required skill triggers](../AGENTS.md#required-skill-triggers) |
+| Read-only codebase onboarding | [Codebase onboarding prompt](prompts/codebase-onboarding.md) |
 | Working artifacts | `plans/` for substantial plans, `handoffs/` for transfers that need extra detail, and `prompts/` for reusable prompts worth sharing |
 | Private scratch | `local/` and `scratch/` are Git-ignored. Keep secrets in an appropriate secret store. |
 
