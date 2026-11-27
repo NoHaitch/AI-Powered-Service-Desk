@@ -24,6 +24,14 @@ When promotion through `main` is authorized, push the feature branch first, merg
 
 Fast-forward merges preserve the focused commit history. If histories diverge, review both sides, preserve their changes with a normal merge, and rerun the applicable checks on the resulting tree. Use a Conventional Commit subject such as `chore(git): merge feature into dev` when a merge commit is required. If GitHub branch rules require pull requests, use the required review path.
 
+GitHub pushes require a working credential helper or a registered SSH key. If HTTPS authentication is unavailable and SSH is configured, verify the account with `ssh -T git@github.com`. GitHub confirms the account name in its response. Use a command-local push rewrite to keep the configured remote and HTTPS fetches intact.
+
+```sh
+git -c 'url.git@github.com:.pushInsteadOf=https://github.com/' push -u origin feature/<topic>
+```
+
+Apply the same rewrite to the `dev` and `main` pushes when using SSH.
+
 ## Local merge gate
 
 Before merging into `main`, verify the candidate with the latest target branch changes. Run formatting, lint, types, builds, and the [feature-level verification gate](../.agents/rules/TESTING_STANDARDS.md). Include applicable positive, negative, security, integration, browser end-to-end, and regression checks against the candidate. Record commands and results. Resolve failures in applicable checks before merging. At the planning stage, verify the documentation itself and record which application checks are unavailable.
