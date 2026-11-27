@@ -20,4 +20,6 @@ Start with the [repository instructions](../AGENTS.md). Open only the entries re
 
 Codex can select repository skills automatically by description or explicitly via `$skill-name`. If a skill is unavailable in the current selector, read the linked `SKILL.md`. A fresh session from the repository root is a good way to check discovery of new root instructions and skills. [Codex skill discovery](https://learn.chatgpt.com/docs/build-skills#where-codex-loads-local-skills) · [Codex instruction discovery](https://learn.chatgpt.com/docs/agent-configuration/agents-md#how-codex-discovers-guidance)
 
+Before completing a feature, use the [verification skill](skills/code-change-verification/SKILL.md) to collect feature-level acceptance and regression evidence. Follow the [testing standards](rules/TESTING_STANDARDS.md) for positive, negative, security, integration, and end-to-end checks at applicable layers. Record verification as partial if a required check is blocked.
+
 The [project documentation](../docs/README.md) is the independent reference for contributors and reviewers.

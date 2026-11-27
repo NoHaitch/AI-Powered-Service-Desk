@@ -41,6 +41,6 @@ Use each applicable skill once per task and read its linked rules only as needed
 
 ## Definition of done
 
-Meet the acceptance criteria, verify the relevant behavior and quality checks, review security and the diff, and synchronize affected docs and context. Record material decisions in ADRs. Report implementation status, actual verification, limitations, and any remaining work. Mark verification as partial when a required check could not run.
+Meet the acceptance criteria, verify feature-level positive, negative, security, integration, end-to-end, and regression behavior at the applicable layers, review security and the diff, and synchronize affected docs and context. Exercise normal entry points and real local dependencies where applicable. Record material decisions in ADRs. Report implementation status, actual verification, limitations, and any remaining work. Mark verification as partial when a required check could not run.
 
 For security-relevant changes, the definition of done includes the [security verification requirements](.agents/rules/SECURITY_STANDARDS.md#security-verification), with evidence from applicable negative tests and failure scenarios.

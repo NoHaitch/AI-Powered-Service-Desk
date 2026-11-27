@@ -1,6 +1,6 @@
 # Employee incident submission and L1 triage
 
-**Status:** Accepted in M0. Implementation requires separate authorization to scaffold.
+**Status:** Accepted in M0 and implemented for the live M1 slice. See the [M1 verification workflow](../architecture/m1-authentication.md#verification-workflow).
 
 ## Scope
 
@@ -18,7 +18,7 @@ The agreed defaults are a required summary and description, priority pending unt
 | INC-04 | An authorized L1 agent opens the intake queue. | The new incident appears in the authorized queue. The agent can open it and see the report. An employee or an agent outside the queue's access scope cannot read the queue or triage the incident. |
 | INC-05 | An authorized L1 agent assesses impact and urgency for a `New` incident. | The server validates both values and applies the approved matrix to compute P1–P4. On success, it persists the assessment and changes status to `Triaged`. The tier stays L1 at every priority. The employee can see the updated status and priority on their incident. |
 | INC-06 | An actor attempts unauthorized triage, submits invalid ratings, or repeats a transition after another agent completed it. | The server rejects the invalid transition or stale update and preserves the last valid incident state. Exactly one successful triage is recorded. |
-| INC-07 | Submission or triage succeeds. | The audit trail records the incident reference, actor, timestamp, action, and relevant state changes, including impact, urgency, and priority for triage. Authorized staff can inspect the record. Employee views expose only employee-facing ticket information. A failed write leaves no partial success state. |
+| INC-07 | Submission or triage succeeds. | The audit trail records the incident reference, actor, timestamp, action, and relevant state changes, including impact, urgency, and priority for triage. Authorized database operators can inspect the M1 audit records. In-app staff audit views are deferred. Employee views expose only employee-facing ticket information. A failed write leaves no partial success state. |
 | INC-08 | An employee flags a report for prompt L1 review at submission. | The queue visibly marks the report and lets L1 filter for flagged incidents. Default ordering is oldest first. The flag does not change urgency, priority, SLA behavior, or support tier. Unflagged reports remain visible by default. |
 
 Verify the happy path with a browser or equivalent end-to-end check. Use API or integration tests for role and ownership boundaries, validation, stale updates, and audit consistency. Use domain tests for each approved matrix combination and allowed transition. Seed local accounts and synthetic incidents so checks run without paid or external AI services.

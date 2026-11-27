@@ -12,7 +12,7 @@ bun install --frozen-lockfile
 bun --bun run dev
 ```
 
-Open the local URL printed by Vite. The fixture preview runs without a backend or environment variables. Choose Maya to report an incident, submit a catalog request, or read a knowledge article. Switch to Alex in the same tab for L1 triage, assignments, and internal notes. Use Jordan for an ownership check and Sam to edit a knowledge draft. Use synthetic information only. See the [frontend experience guide](../docs/architecture/frontend-experience.md#navigation-integration-and-user-flows) for the walkthrough and preview limits.
+The native dev server can display public pages. For authentication and incidents, use the [Compose development override](../docs/architecture/local-first.md#run-the-local-stack) so the browser reaches the live API over the trusted HTTPS origin. Provision synthetic accounts with the [development seed](../docs/architecture/database-schema.md#migration-and-local-seed-workflow). Use separate browser profiles to sign in as an employee and an L1 agent at the same time.
 
 See the [frontend experience guide](../docs/architecture/frontend-experience.md) for the sitemap, layouts, and current and planned flows.
 
@@ -44,7 +44,9 @@ Run from `frontend/`:
 ```sh
 bun --bun run lint
 bun --bun run build
-bun test
+bun test tests
 ```
 
 The build runs TypeScript checks and writes static assets to `dist/`. Bun tests cover triage, input limits, queue filtering, ticket ownership, reply and note visibility, storage failures, and knowledge draft scope.
+
+For live browser verification, install the locked Chromium binary with `bunx --no-install playwright install chromium`. From the repository root, run `bash backend/tests/run_m1_auth_https.sh`. It runs the browser against the same isolated PostgreSQL, Redis, and HTTPS stack used for contract tests.

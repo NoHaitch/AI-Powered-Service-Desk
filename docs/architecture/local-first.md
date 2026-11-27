@@ -12,7 +12,7 @@
 | Redis container | M1 authentication rate limiting. Caching and optional revocation acceleration are deferred until justified. | Private to FastAPI on the Compose network. Limiter outage blocks login and refresh while unaffected routes remain available. PostgreSQL remains authoritative. |
 | Independent ML inference container (later) | Self-host a versioned classifier and return advisory predictions. | An internal HTTP call from FastAPI with a timeout and manual fallback. The inference service does not need direct access to the application database. |
 
-The Compose configuration publishes only the frontend HTTPS port on loopback. The frontend and backend share the edge network. PostgreSQL and Redis connect only to the internal data network shared with the backend and the one-shot migration service. Vite and Nginx forward `/api` before the SPA fallback. This foundation ignores forwarded identity headers. Configure an explicit proxy trust boundary alongside the authentication/IP policy when implementing auth. See the [frontend decision](../decisions/0002-react-vite-and-bun.md).
+The Compose configuration publishes only the frontend HTTPS port on loopback. The frontend proxy and backend share a dedicated edge network. Only the reserved frontend peer is trusted to assert the source address. The proxy overwrites the internal header with its socket address. PostgreSQL and Redis connect only to the internal data network shared with the backend and the one-shot migration service. Vite and Nginx forward `/api` before the SPA fallback. The API ignores generic forwarding headers and validates the exact HTTPS origin for mutations. See the [frontend decision](../decisions/0002-react-vite-and-bun.md).
 
 The [repository structure standard](../../.agents/rules/REPOSITORY_STRUCTURE.md) defines where these deployables, their configuration, and their tests live.
 
@@ -20,30 +20,33 @@ The [repository structure standard](../../.agents/rules/REPOSITORY_STRUCTURE.md)
 
 Use a Docker engine in Linux container mode with BuildKit and Compose 2.24.4 or newer, Python 3.14, and [mkcert](https://github.com/FiloSottile/mkcert). Build downloads require access to the image registries and lockfile package sources. The running application and Swagger assets are local.
 
-From the repository root, register the mkcert development CA on your own workstation and generate the ignored `.local/` files. The setup helper preserves existing credentials. Store the directory in the private checkout and keep its files out of source control. The file mounts grant only the relevant containers access.
+From the repository root, trust the mkcert CA on your workstation and generate the ignored `.local/` secret files. The setup helper preserves existing credentials and upgrades the known previous Redis ACL. `DESK_LOCAL_SECRET_DIR` selects a separate private directory for isolated Compose projects. Use distinct secrets and browser profiles for different environments.
 
 ```sh
 mkcert -install
 python scripts/setup_local.py
-docker compose -f compose.yaml -f compose.dev.yaml up --build --wait
+docker compose up -d --wait postgres redis
 docker compose --profile tools run --rm --build migrate
-python scripts/check_local.py --swagger
+docker compose up -d --build --wait
 ```
 
-For an existing PostgreSQL volume, apply the [maintenance-role bootstrap](database-schema.md#migration-and-local-seed-workflow) before running the migration command.
+For an older PostgreSQL volume, see the [maintenance-role bootstrap](database-schema.md#migration-and-local-seed-workflow) before migrating. An existing Compose project that uses the old edge network may need to be stopped and brought down before starting the new definition. Keep its named volumes. Recreate Redis to load the updated ACL.
 
-Open `https://localhost:8443` for the existing frontend preview and `https://localhost:8443/api/docs` for Swagger. Vite watches frontend source files. Use the base `docker compose up --build --wait` command for the optimized Nginx runtime and `python scripts/check_local.py` for its default docs-off mode. Stop the running configuration before switching modes. `DESK_HTTPS_PORT` changes the loopback host port, and `DESK_SWAGGER_ENABLED` overrides the docs setting. See [backend configuration](../../backend/README.md#backend-configuration) for API settings.
+Provision accounts explicitly on a [marked development database](database-schema.md#migration-and-local-seed-workflow), then open `https://localhost:8443`. For source watching and local Swagger, use `docker compose -f compose.yaml -f compose.dev.yaml up -d --build --wait` after migration. The release build uses Nginx and disables Swagger by default. `DESK_HTTPS_PORT` selects the loopback port. `DESK_AUTH_ORIGIN` selects the exact accepted HTTPS scheme, hostname, and port. If port forwarding changes the browser origin, configure that origin explicitly and use a certificate trusted by the browser. `DESK_AUTH_PROXY_SUBNET` and `DESK_AUTH_PROXY_PEER` can resolve a conflicting local network allocation.
 
-Inspect startup and persistence using `docker compose ps` and `docker compose --profile tools run --rm migrate alembic current`. Stop and recreate the PostgreSQL container, then check that the migration revision remains. The `postgres_data` named volume holds durable data. Bootstrap scripts run only on first initialization. Preserve the matching database secrets when preserving the volume. Redis is bounded, non-evicting, and ephemeral in this slice. Its ACL permits `PING` only until the auth limiter defines its required commands and verifies restart recovery.
+The named PostgreSQL volume retains durable data. PostgreSQL bootstrap runs only at first initialization. Preserve the associated secrets when preserving the volume. Redis is a bounded, non-evicting ephemeral limiter. See the [authentication operations guide](m1-authentication.md) for startup and recovery timing, security, and internal transport boundaries.
 
-For a local backup, run `docker compose exec -T postgres pg_dump -U postgres -d service_desk -Fc -f /tmp/service-desk.dump` and copy the dump to protected local storage with `docker compose cp postgres:/tmp/service-desk.dump .local/service-desk.dump`. To exercise restore on the same local cluster, create a scratch database and run `pg_restore` against it as the PostgreSQL administrator. Verify the revision and records there before considering a real restore. Follow the [database standards](../../.agents/rules/DATABASE_STANDARDS.md) for access and backup handling.
+To prepare an encrypted PostgreSQL backup, stream `docker compose exec -T postgres pg_dump -U postgres -d service_desk -Fc` to approved authenticated encryption tooling and store the encrypted output with restricted access. Keep the recovery key separately from the backup. Coordinate PostgreSQL and attachment backups, verify restore on an isolated instance, and follow the [database standards](../../.agents/rules/DATABASE_STANDARDS.md) and [content storage recovery process](content-storage.md).
 
 ## Verification record
 
-- PostgreSQL 17.12 and Redis 8.8.0 started with `docker compose up -d --wait --wait-timeout 120 postgres redis`. Both reported healthy. A TCP `SELECT 1` using the PostgreSQL runtime role returned `1`, and an authenticated Redis `PING` using the restricted ACL user returned `PONG`. Neither service published a host port.
-- The Vite development and Nginx runtime frontend images built and started successfully. Host HTTPS checks reached the SPA deep link at `https://localhost:8443/portal/tickets` through the Compose loopback port mapping. Nginx returned HTTP `503` for an API request while the backend was stopped.
-- Chromium exercised the same flow on both frontend targets through the forwarded port, covering visitor denial, blank-field validation, prompt-review intake, cross-owner denial, L1 triage, and the updated requester detail. The final frontend passed ESLint, the TypeScript and Vite build, and all 12 Bun tests. The browser flow used synthetic personas and tab storage.
-- Native testing previously verified PostgreSQL readiness, runtime DDL denial, repeatable migration, HTTPS proxying, and Swagger. The backend image built and passed the release HTTPS smoke check through Nginx, including API liveness, PostgreSQL readiness, Redis, SPA routing, and the docs-off setting. PostgreSQL persistence after container recreation remains pending. The [M1 schema verification](database-schema.md#verification) exercises migrations separately on disposable PostgreSQL instances.
+- PostgreSQL 17.12 and Redis 8.8.0 reported healthy. PostgreSQL readiness and authenticated Redis health passed through the loopback HTTPS entry point. Only the frontend publishes a host port.
+- The isolated development database contains 12 accounts, including two disabled accounts. PostgreSQL container recreation preserved all 12 accounts and Alembic revision `0003_private_attachments`. A separately provisioned real login returned the seeded identity, could read its incidents, and signed out successfully.
+- `UV_NO_SYNC=1 bash backend/tests/run_m1_postgres.sh` passed 30 tests on each fresh and baseline-upgrade PostgreSQL instance, including migration consistency, seed opt-in and preservation, database constraints, the concurrency guards, and restricted audit privileges. The fixture data and credentials remained independent of the existing unmarked local project.
+- The full Nginx HTTPS run passed 17 Python checks across the API and dedicated expiry phases, followed by all three Chromium journeys. Employees submitted and tracked an incident, cross-account and out-of-queue access were denied, and L1 triage produced the expected priority. The browser verified cookie attributes, actual access expiry, cross-tab refresh, sign-out, localized errors, and inert rendering of submitted markup. API checks covered token validation, replay and revocation, CSRF, current queue grants, concurrent operations, audit rollback, Redis counter races and memory exhaustion, PostgreSQL and Redis outages, and redaction.
+- The focused Vite Compose HTTPS run passed its TLS and limiter initialization check plus all three Chromium journeys with current accounts and the same FastAPI backend.
+- Native Ruff, mypy, ESLint, TypeScript, and 15 Bun tests passed. The locked `uv audit` and Bun advisory checks reported zero known package findings. Local container image vulnerability scanning and sustained release capacity measurement were outside these checks.
+- The [HTTPS verification workflow](m1-authentication.md#verification-workflow) uses `bash backend/tests/run_m1_auth_https.sh` for the full release test. The Vite browser run additionally set `DESK_AUTH_TEST_VITE=1` and `DESK_AUTH_TEST_BROWSER_ONLY=1`. TLS 1.2 and 1.3 were negotiated with certificate and hostname verification at the Nginx ingress. The reference PostgreSQL container reported `ssl=off` on its private bridge.
 
 ## Persistence and caching
 
@@ -58,7 +61,7 @@ The [PostgreSQL integration design](postgresql-integration.md) covers the accept
 
 ## Demo data seeding
 
-Run the [opt-in local seed command](database-schema.md#migration-and-local-seed-workflow) after migrations. It populates a marked development database with the synthetic frontend personas, an L1 queue, and new and triaged incidents. The command uses privately supplied passwords and preserves existing fixture edits on reruns.
+Run the [opt-in local seed command](database-schema.md#migration-and-local-seed-workflow) after migrations. It populates a marked development database with synthetic accounts, explicit L1 memberships, and new and triaged incidents. It includes disabled users and agents without queue membership for denied-path checks. The command uses privately supplied passwords and preserves existing fixture edits on reruns.
 
 ## Authentication and data policy
 

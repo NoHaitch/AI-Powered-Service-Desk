@@ -4,34 +4,29 @@ The service desk has three navigation areas built on React, Vite, Tailwind CSS, 
 
 ## Sitemap and current scope
 
-| Area | Route or route family | Frontend preview state |
+| Area | Route or route family | Current experience |
 | --- | --- | --- |
-| Public | `/`, `/login` | Synthetic persona selection. Real username and password login waits for FastAPI. |
-| Public | `/about` | Preview workflow, employee and staff use cases, technology stack, sample contacts, and a link to the FAQ. |
-| Public | `/help` | Categorized FAQ for the preview and sample workplace IT guidance. |
-| Public | `/error/401`, `/error/403`, `/error/404`, `/error/500`, `/error/503` | Safe error views; unauthorized, forbidden, and unavailable ticket navigation use these presentations. |
-| Public | Registration and password recovery | Deferred until account policy and backend support are defined. |
-| Employee | `/portal`, `/portal/tickets` | Search assistance, primary actions, recent incidents, and searchable and paginated owned tickets. |
-| Employee | `/portal/incidents/new`, `/portal/tickets/:id` | Incident submission, ticket details, scoped replies, activity history, and seeded resolutions. |
-| Employee | `/portal/catalog`, `/portal/requests/new/:service` | Searchable and categorized synthetic services with dedicated request forms and employee tracking. `/portal/requests/new` also opens the catalog. |
-| Employee | `/portal/knowledge`, `/portal/knowledge/:article` | Search, category filtering, and synthetic Markdown articles. Relevant articles link to request forms. |
-| Employee and management | `/{portal,workspace}/profile`, `/{portal,workspace}/notifications` | Persona profile, local preferences, scoped ticket updates, and per-persona read state. |
-| Employee | `/portal/assistant`, service status | Grounded assistance placeholder. Service status is planned. |
-| Management | `/workspace` | Role-aware fixture counts and Recharts incident volume. Administrators see aggregates and have no default access to incident details. |
-| L1 agent | `/workspace/queue`, `/workspace/tickets`, `/workspace/assignments`, `/workspace/tickets/:id` | Oldest-first incident intake, prompt-review, assignment and status filters, triage, scoped replies, and internal notes. Assignment and resolution examples are seeded. |
-| Administrator | `/workspace/knowledge`, `/workspace/knowledge/:article` | Knowledge inventory, local draft editing, and confirmed discard. Employee-visible fixtures are unchanged by drafts. |
-| Administrator | `/workspace/access`, `/workspace/settings` | Labeled placeholders. An administrator persona has no implicit L1 grant. |
-| Management | Assignment changes, later transitions, escalation, AI recommendations, knowledge publishing and ingestion, catalog administration, analytics, AI management, RBAC, SLA, audit logs | Planned. See the workflow decisions below. |
+| Public | `/`, `/login` | Username and password login with provisioned accounts. |
+| Public | `/about`, `/help` | Service overview, sample contacts, and a categorized FAQ. |
+| Public | `/error/401`, `/error/403`, `/error/404`, `/error/500`, `/error/503` | Safe error views. |
+| Employee | `/portal`, `/portal/tickets` | Incident actions and a paginated list of owned incidents. |
+| Employee | `/portal/incidents/new`, `/portal/tickets/:id` | Live intake, updates, and incident details. |
+| Employee | `/portal/catalog`, `/portal/requests/new/:service` | Browse categorized sample services. Submitting and tracking service requests are planned. |
+| Employee | `/portal/knowledge`, `/portal/knowledge/:article` | Search, category filters, and read-only Markdown articles. |
+| Employee and management | `/{portal,workspace}/profile` | Live identity, role labels, browser-local appearance, and sign-out. |
+| Management | `/workspace` | Role-aware navigation. An administrator alone has no incident access. |
+| L1 agent | `/workspace/queue`, `/workspace/tickets/:id` | Live oldest-first intake, prompt-review filtering, authorized detail, and triage. |
+| Planned | Notifications, assignment, conversations, user administration, knowledge editing, and AI assistance | These workflows wait for the server contracts in their respective milestones. |
 
 ## Layout and design system
 
-Public and employee pages use a responsive top bar with account and theme controls. The management area uses the existing collapsible shadcn Sidebar and a top utility bar. Ticket lists offer 10, 20, 50, or 100 rows per page on desktop and mobile, starting at 10. Changing the page size returns to page one. Ticket table headers are labels. The separate Sort dropdown controls order where offered, and L1 intake remains oldest first. Native select controls share an inset down chevron in both themes. Ticket details include a breadcrumb and an activity timeline. In-progress tickets show the assigned agent beside the ticket reference and date when an assignee is present.
+Public and employee pages use a responsive top bar with account and theme controls. The management area uses the existing collapsible shadcn Sidebar and a top utility bar. Ticket lists offer 10, 20, 50, or 100 rows per page on desktop and mobile, starting at 10. Changing the page size returns to page one. Ticket table headers are labels. The separate Sort dropdown controls order where offered, and L1 intake remains oldest first. Native select controls share an inset down chevron in both themes. Live incident details show the reference, status, priority, report and update time. The earlier fixture layouts illustrate activity timelines and displaying assignees near the ticket reference for later workflows.
 
 An app-wide theme provider follows the system's light or dark preference on first visit and tracks system changes until the user chooses a theme. The header button switches directly to the opposite theme. Its hover and keyboard-focus tooltip names the next action. The user's choice is stored in the browser and applied across routes and reloads.
 
 Public, employee, and management pages share a footer. It shows ©, the current year calculated at runtime, the author name NoHaitch, and the application name AI-Powered Service Desk. The text-only links appear in the order About, Help, and GitHub. The footer can wrap at narrow widths. GitHub links to the [project repository](https://github.com/NoHaitch/AI-Powered-Service-Desk).
 
-The About page opens with links to preview sign-in and the FAQ. Its four cards cover the workflow, use cases, technology, and sample contacts. Cards stack on smaller screens and use two columns on large screens. Body paragraphs and lists are justified, with left-aligned headings and contact details. The workflow walks through employee intake, L1 triage, and requester follow-up. It also shows use cases for the catalog, knowledge base, and staff workspace. Keep the technology summary aligned with the stack and clearly label the synthetic preview. The contact section displays `support@example.com` and `+1 (202) 555-0147` as sample details.
+The About page opens with links to sign-in and the FAQ. Its four cards cover the workflow, use cases, technology, and sample contacts. Cards stack on smaller screens and use two columns on large screens. Body paragraphs and lists are justified, with left-aligned headings and contact details. The workflow walks through employee intake, L1 triage, and requester follow-up. It also shows use cases for the catalog, knowledge base, and staff workspace. Keep the technology summary aligned with the stack and identify the synthetic development data. The contact section displays `support@example.com` and `+1 (202) 555-0147` as sample details.
 
 Raleway, the shared shadcn theme tokens, and Remix Icons form the visual baseline. Use existing shadcn inputs, buttons, cards, menus, alerts, badges, and overlays. Use semantic status and priority colors with text labels. Keep reduced-motion support, visible focus, accessible labels, and bounded mobile table scrolling. See the [frontend design standard](../../.agents/rules/FRONTEND_DESIGN_STANDARDS.md).
 
@@ -93,16 +88,16 @@ The source files can be reviewed for future RAG ingestion. Uploads, indexing, an
 
 Use browser links, lazy-loaded feature pages, and Vite's history fallback. Show a centered spinner with an accessible loading label while a lazy route loads. Local release routing must preserve API forwarding before the SPA fallback. Revisit a declarative router when nested routes or retained navigation state justify the dependency.
 
-Synthetic personas select preview scope without collecting passwords. Ticket changes, replies, knowledge drafts, and notification state persist only in the current tab's session storage. Theme preference is browser-local. Fixture identifiers are for display. Ticket activity represents employee-facing or staff-facing events and remains separate from the future audit trail. Ticket projections share a list and detail experience while retaining separate incident and request models. Fixture visibility checks mirror intended UI scopes. Enforce session, resource, and mutation authorization in the API and verify durable audit records there.
+Live routes obtain identity from `/auth/me` and incident data from the API. The browser coordinates refresh across tabs using Web Locks. Role-based navigation is a UI affordance. The server enforces incident ownership and current role and queue grants. CSRF stays in memory and the credential cookies are HttpOnly. Fixture models remain as development references and are outside the live sign-in and incident routing.
 
-1. Sign in as Maya to report an incident or open an item in the catalog. Track both in My Tickets. On `INC-1047`, add a reply and review activity. Open `INC-1044` to see the seeded resolution and closed conversation.
-2. Switch to Alex in the same tab to triage a new incident, review My Assignments, or respond on `INC-1047`. Add an internal note and confirm it stays out of Maya's view. Switch to Jordan to confirm that Maya's ticket links are unavailable.
-3. Switch to Sam, edit a knowledge draft, and confirm discard when finished. Maya sees the original published content. The shared-drive article links to its dedicated catalog form.
-4. Open the account menu to review the persona profile and notification preferences. Notifications are derived from scoped fixture events, and read state is per persona.
+1. Sign in as Maya to report an incident and open it from My Tickets. Reload to confirm the stored report is still visible.
+2. Sign in as Alex in a separate browser profile to review the L1 intake queue. Optionally filter for prompt review, assess impact and urgency, and complete triage.
+3. Return to Maya's browser to read the new status and priority. In another profile, sign in as Jordan and confirm the incident is unavailable.
+4. Open Profile & preferences to review the current identity, appearance behavior, and session sign-out.
 
 ## Workflow decisions pending
 
-| Workflow | Proposed first policy | Current preview |
+| Workflow | Proposed first policy | Earlier fixture design |
 | --- | --- | --- |
 | Assignment and resolution | Let L1 agents self-assign triaged incidents and resolve their own assignments with a required resolution summary. Review closure, reopening, reassignment, and SLA timing separately. | Show seeded assignments, status, and resolution history. Triage remains the supported transition. |
 | Escalation | Allow the assigned agent to hand off to the next tier with a reason. Clear individual assignment while preserving priority and elapsed SLA time. | Escalation mutations remain unavailable. |
@@ -111,8 +106,4 @@ Synthetic personas select preview scope without collecting passwords. Ticket cha
 
 ## Priorities and verification
 
-1. Exercise preview routes, validation, permission affordances, and the fixture employee-to-L1 path.
-2. Integrate cookie auth, CSRF, and incident endpoints. Replace fixture success and local state with authoritative responses. Add real API loading and failure states within the accepted contract.
-3. Review pending workflow policies and integrate the catalog, agent lifecycle, ticket communication, and knowledge workflows according to the [roadmap](../roadmap.md). Add AI only as its data and authorization paths mature.
-
-Run the frontend lint, build, and Bun tests. Verify desktop and mobile navigation, role denials, invalid input, triage outcome, and browser layout. Keep real security and end-to-end integration claims tied to backend verification.
+Run frontend lint, build, Bun regression tests, and the [HTTPS feature suite](m1-authentication.md#verification-workflow) for changes to authenticated journeys. The browser suite covers sign-in, session restoration, role denials, form validation, durable incident intake, and triage. Keep pending workflows aligned with their [roadmap milestones](../roadmap.md).

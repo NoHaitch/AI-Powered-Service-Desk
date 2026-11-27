@@ -6,5 +6,5 @@ description: Verify changes to application code, runtime behavior, tests, depend
 # Code change verification
 
 1. Find manifests, local scripts, and setup docs for the changed entry points. Confirm the applicable commands and prerequisites. Use the [local merge gate](../../../docs/git-and-releases.md#local-merge-gate) when preparing a merge to `main`.
-2. Follow the [testing standards](../../rules/TESTING_STANDARDS.md). Check changed behavior at the appropriate layers and broaden coverage for shared code, contracts, and dependencies. Include degraded and denied paths where relevant.
-3. Run the available formatting, lint, typing, test, and build checks relevant to the change. Fix introduced failures and rerun affected checks. Record commands and outcomes, distinguishing pre-existing failures and checks blocked by missing prerequisites.
+2. Follow the [testing standards](../../rules/TESTING_STANDARDS.md). Map acceptance criteria to feature-level positive, negative, security, integration, end-to-end, and regression checks at applicable layers. Exercise the normal application entry points and real local dependencies for changed boundaries. Include degraded, denied, and concurrent behavior where relevant.
+3. Run the available formatting, lint, typing, test, and build checks relevant to the change. Fix introduced failures and rerun affected checks. Record commands, environments, and outcomes. Explain inapplicable layers and mark verification partial if a required check is blocked.

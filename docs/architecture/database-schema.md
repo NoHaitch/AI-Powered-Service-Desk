@@ -47,7 +47,7 @@ IDs are native UUIDs unless noted. Timestamps use `timestamptz`. Fields are non-
 | `refresh_credentials` | UUID, `family_id`, unique 32-byte `digest`, `issued_at`, `expires_at`, optional `consumed_at` and `predecessor_id`. A same-family composite FK, one root, one successor per predecessor, and one unconsumed credential per family prevent branching and duplicate active credentials. A successor requires a consumed predecessor. Consumption cannot be reversed. |
 | `incident_audit_events` | UUID, indexed `ticket_id` and `actor_id`, `request_id`, `occurred_at`, and typed action and transition fields. Submission and successful triage capture status and, for triage, the assessment. Retained for the life of the incident. |
 | `auth_audit_events` | UUID, optional indexed `actor_id` and `family_id`, `request_id`, indexed `occurred_at`, and bounded `action` and `outcome`. Unknown-identity failures can omit user and family. Configurable retention defaults to 90 days. |
-| `auth_limiter_state` | Singleton integer `id=1`, `generation` UUID, optional `recover_after`, and `updated_at`. Its durable state remains separate from Redis counters. It is populated by the future limiter. |
+| `auth_limiter_state` | Singleton integer `id=1`, `generation` UUID, optional `recover_after`, and `updated_at`. Its durable state remains separate from Redis counters. The limiter uses it to fence counter generations and persist cooldowns. |
 
 ### Transaction and access boundaries
 
@@ -91,16 +91,26 @@ docker compose --profile tools run --rm --build migrate
 
 Apply upgrades separately from API startup. The revision upgrades from the empty baseline. Downgrade to the baseline is permitted only when the M1 schema has no data. Use a verified backup or a reviewed forward migration for populated databases.
 
-Mark only a disposable local development database for seeding. Create a private JSON file under the ignored `.local/` directory with keys `maya`, `jordan`, `alex`, and `sam`. Supply a distinct synthetic password of 12–128 characters for each. Keep the file private.
+Mark only an isolated local database for development seeding. After migration, use the interactive prompt and supply a unique, privately generated password of 12–128 characters for each account.
 
 ```sh
 docker compose exec -T postgres psql -X -U postgres -d service_desk -v ON_ERROR_STOP=1 \
   -c "COMMENT ON DATABASE service_desk IS 'service-desk-development-seed'"
-docker compose --profile tools run --rm -T migrate python -m app.seed --development \
-  < .local/seed-passwords.json
+docker compose --profile tools run --rm migrate python -m app.seed --development --prompt
 ```
 
-The seeder requires explicit opt-in, a local host, the migration login, and the database marker. It hashes private input with Argon2id, creates four synthetic accounts, grants L1 queue access only to Alex, and sets up new and triaged incidents with audit events. Stable UUIDs and a transaction-scoped advisory lock serialize reruns. Existing persona edits, role changes, and password hashes are preserved. A conflicting username aborts rather than granting access to the wrong account.
+For noninteractive seeding, pass JSON on standard input instead of using `--prompt`. The JSON keys are the usernames in the table below. Create any temporary password file with mode `0600` under ignored `.local/` and remove it when it is no longer needed.
+
+| Synthetic accounts | Default access |
+| --- | --- |
+| `maya`, `jordan`, `priya` | Employees with separate incident ownership. |
+| `alex`, `casey` | Agents with explicit L1 intake membership. |
+| `riley`, `mina` | Future L2 and L3 personas, provisioned as agents without queue membership until those tiers are implemented. |
+| `drew` | Agent without queue membership. |
+| `sam`, `avery` | Administrators with no automatic ticket visibility. |
+| `taylor`, `quinn` | Disabled employee and disabled L1 agent. |
+
+The seeder requires explicit opt-in, a local host, the migration login, and the database marker. Argon2id hashes all passwords. Stable UUIDs and an advisory lock serialize reruns. Existing names, state, role and queue changes, and password hashes are preserved. Conflicting usernames abort the transaction. The seeder also provides a new and a triaged incident with audit records.
 
 Run the isolated integration suite after `uv sync --locked` in `backend/`.
 
@@ -112,8 +122,10 @@ bash backend/tests/run_m1_postgres.sh
 
 The isolated suite passed on two PostgreSQL 17.12 containers. It applied the full migration chain on a fresh database and separately upgraded a database first brought to `0001_foundation`. Both passed Alembic metadata comparison and all 13 backend tests. The suite verified an empty downgrade and re-upgrade, rejected downgrades with seeded data, rejected seeding without the database marker, and confirmed repeatable seeding preserves edited identity and credentials.
 
-Real PostgreSQL checks exercised missing and duplicate incident subtypes, malformed assessments and usernames, retained foreign keys, concurrent reference allocation and rollback gaps, concurrent guarded triage, audit-write rollback, refresh lineage and single-successor races, runtime privilege denials, forced server audit timestamps, and the separate auth retention role. The auth and incident API authorization flows, Redis limiter behavior, and data-volume recreation test remain later verification.
+Real PostgreSQL checks exercised missing and duplicate incident subtypes, malformed assessments and usernames, retained foreign keys, concurrent reference allocation and rollback gaps, concurrent guarded triage, audit-write rollback, refresh lineage and single-successor races, runtime privilege denials, forced server audit timestamps, and the separate auth retention role. See the [local HTTPS verification](local-first.md#verification-record) for the authentication, incident API, Redis, and browser checks.
 
 ## Redis key conventions
 
-Redis remains private and non-evicting for the planned limiter. Use the existing `limiter:*` namespace with proposed versioned keys `limiter:v1:<generation>:<operation>:<bucket>[:<keyed-digest>]`. Keep a separate generation marker within the namespace and compare it with durable PostgreSQL state. Use a secret-keyed digest for identifiers, sources, and family IDs. Never place raw usernames, IPs, or credentials in keys. Set TTLs atomically with fixed-window counters and bound per-identity key creation by aggregate admission. Login and refresh fail closed on limiter unavailability or uncertain state. Counter writes, Redis ACL expansion, and limiter behavior are deferred to the auth API slice. [Accepted limiter policy](m0-authentication-design.md#configurable-limiter-defaults)
+Redis is a private, non-evicting, ephemeral counter store. Counter keys use `limiter:v1:<generation>:<operation>:<bucket>[:<keyed-digest>]`. `limiter:v1:generation` holds a keyed marker derived from the durable PostgreSQL generation, and `limiter:v1:recovery-probe` verifies writes during recovery. Identifiers, sources, and family IDs are keyed digests. No raw credentials enter Redis.
+
+The application ACL allows only `PING`, `EVAL`, `GET`, `SET`, `PTTL`, and `INCR` in the `limiter:*` namespace where applicable. Lua compares the generation and updates count and expiry atomically. PostgreSQL persists recovery fences across container restarts. [Accepted limiter policy](m0-authentication-design.md#configurable-limiter-defaults)

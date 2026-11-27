@@ -48,12 +48,12 @@ Hosted deployment remains optional (M6).
 - [x] Build the [frontend fixture slice](architecture/frontend-experience.md) with public, employee, and workspace layouts, preview sign-in, incident submission, tracking, and L1 triage.
 
 - [x] Implement the [FastAPI foundation](../backend/README.md) with locked dependencies, migrations, database and cache clients, health endpoints, correlated logs, and same-origin Swagger. Verify native API checks and degraded behavior.
-- [ ] Run the [Compose verification](architecture/local-first.md#run-the-local-stack) on a Docker-enabled host. Build both frontend targets and the API, verify the datastore probes, and confirm volume persistence. Both frontend targets and the API built, and the release HTTPS smoke check passed. PostgreSQL volume persistence after recreation remains pending. See the [verification record](architecture/local-first.md#verification-record) for port forwarding and remaining integration checks.
+- [x] Build both frontend targets and the API with [Compose](architecture/local-first.md#run-the-local-stack). Verify the datastore probes over HTTPS and preserve seeded accounts and the migration revision across PostgreSQL container recreation. [Verification](architecture/local-first.md#verification-record)
 - [x] Implement the [M1 PostgreSQL schema](architecture/database-schema.md) for identity, queue membership, shared ticket identity, incident details, refresh lineage, and restricted audits. Verify fresh migration, baseline upgrade, constraints, concurrency, and role permissions on isolated PostgreSQL.
 - [x] Provide a documented [database seed command](architecture/database-schema.md#migration-and-local-seed-workflow) after migrations. Verify it on fresh PostgreSQL and confirm reruns preserve existing synthetic credentials and edits.
-- [x] Verify the [private attachment foundation](architecture/content-storage.md#attachment-foundation) with PostgreSQL metadata and the local storage provider. Attachment APIs and frontend integration wait for live auth and incident authorization.
-- [ ] Implement sign-in, refresh, logout, and server-side authorization for seeded roles. Introduce private Redis rate limiting with the first login and refresh flow. Verify limits, concurrency, expiry, and recovery, plus fail-closed `503` responses and unaffected routes. Add auth and limiter logs, audit events, health signals, and bounded metrics without requiring an observability stack.
-- [ ] Deliver one tested vertical slice where an employee submits and views their own incident, L1 filters the queue and triages the incident, and each successful change produces an audit event. Verify the browser flow and negative cases against the M0 evaluation plan.
+- [x] Verify the [private attachment foundation](architecture/content-storage.md#attachment-foundation) with PostgreSQL metadata and the local storage provider. Attachment APIs and frontend integration remain a follow-up increment after verified incident authorization.
+- [x] Implement database-backed sign-in, strict refresh rotation, logout, protected navigation, read-only profiles, and current server-side role and queue authorization. Verify Redis limits, concurrency, expiry, recovery, fail-closed `503` behavior, and transactional audits. Operational logs and readiness provide bounded health and outcome signals. [Verification](architecture/local-first.md#verification-record)
+- [x] Verify the live employee intake and tracking flow, L1 queue filtering and triage, denied access, and transactional audit records with real PostgreSQL, Redis, and Chromium through local HTTPS. [Verification](architecture/local-first.md#verification-record)
 
 **Completion gate.** A local setup can run the slice without paid services. Tests demonstrate successful intake and triage, denied cross-user access, invalid input handling, and a correct audit record.
 
@@ -119,7 +119,7 @@ The [frontend preview](architecture/frontend-experience.md) includes searchable 
 
 | Decision | Proposal or open choice | Needed by |
 | --- | --- | --- |
-| Auth proxy trust | Select the trusted proxy identity or subnet and client IP extraction rules for rate limiting. The current API ignores forwarding headers. | M1 authentication |
+| Account lifecycle | Review administration, credential changes, other-session revocation, and recovery. The [M1 auth boundaries](decisions/0007-local-authentication-boundaries.md) establish the local seeded scope and trusted proxy. | M2 and later |
 | Service desk expansion | Agree on lifecycle transitions beyond triage, escalation, priority overrides, and SLA timing. | M2 |
 | Retrieval and generation | Decide the indexing approach, embedding model, provider, fusion strategy, and evaluation thresholds after representative data and baseline results are available. | M3 |
 | AI tooling and datasets | Select the classifier taxonomy, dataset, inference boundary, LangChain or LangGraph use, and MCP tool scope only when justified. | M4 |

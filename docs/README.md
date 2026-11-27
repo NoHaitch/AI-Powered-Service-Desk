@@ -1,8 +1,8 @@
 # Project documentation
 
-M0 product planning is complete and M1 is active. The [project README](../README.md) summarizes current scope. See the [frontend guide](../frontend/README.md) for fixture setup and the [backend guide](../backend/README.md) for FastAPI, Swagger, and verification.
+M0 product planning is complete and M1 is active. The [project README](../README.md) summarizes current scope. See the [frontend guide](../frontend/README.md) for application setup and the [backend guide](../backend/README.md) for FastAPI, Swagger, and verification.
 
-See the [Git and release workflow](git-and-releases.md) for branch roles, the local merge gate, and manual releases.
+See the [Git and release workflow](git-and-releases.md) for focused commits, GitHub promotion from a feature branch through `dev` and `main`, the local merge gate, and manual releases.
 
 See the [project roadmap](roadmap.md) for milestone status, the prioritized feature checklist, release gates, and open scope decisions.
 
@@ -12,13 +12,15 @@ See the [local-first architecture](architecture/local-first.md) for Compose setu
 
 See the [frontend decision](decisions/0002-react-vite-and-bun.md) for the selected UI stack and release build direction.
 
-See the [frontend experience guide](architecture/frontend-experience.md) for the sitemap, layouts, roles, fixture flows, and implementation priorities.
+See the [frontend experience guide](architecture/frontend-experience.md) for the sitemap, layouts, roles, live flows, and implementation priorities.
 
 See the [PostgreSQL integration design](architecture/postgresql-integration.md) for the selected driver, sessions, and transaction boundaries. See the [database schema](architecture/database-schema.md) for the implemented data dictionary, ER diagrams, migrations, seeding, and Redis conventions.
 
 See the [observability architecture](architecture/observability.md) for instrumentation priorities, the audit boundary, and optional local collection.
 
 See the [M0 authentication and incident design](architecture/m0-authentication-design.md) for the accepted API and data contracts, threat model, and evaluation plan.
+
+See the [M1 authentication operations guide](architecture/m1-authentication.md) and [auth boundary ADR](decisions/0007-local-authentication-boundaries.md) for local ingress, key lifecycle, seed accounts, and verification.
 
 See [application policies and configuration](policies-and-configuration.md) for policy status and runtime settings as they are defined.
 

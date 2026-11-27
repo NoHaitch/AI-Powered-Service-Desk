@@ -74,7 +74,7 @@ The [roadmap](../docs/roadmap.md#release-targets) defines the agreed release seq
 | Web | React, Vite, TypeScript, Bun, Tailwind CSS, shadcn/ui | See the [frontend guide](../frontend/README.md). Same-origin HTTPS with a Vite development proxy and Nginx for local releases remains the full-stack design. |
 | Client data | TanStack Query | React Hook Form and Zod where useful |
 | API | Python, FastAPI, Pydantic | OpenAPI contracts, uv dependency management |
-| Auth | Stateless JWT access verification and rotating opaque refresh cookies | [Accepted credential policy](../docs/decisions/0003-stateless-access-and-refresh-rotation.md). FastAPI owns authorization. |
+| Auth | Stateless JWT access verification and rotating opaque refresh cookies | [Accepted credential policy](../docs/decisions/0003-stateless-access-and-refresh-rotation.md) and [M1 ingress and key boundaries](../docs/decisions/0007-local-authentication-boundaries.md). FastAPI owns authorization and checks current queue membership. |
 | Application data | PostgreSQL | Selected as the authoritative store for ticket, user, role, metadata, and audit records. |
 | Persistence integration | SQLAlchemy 2.x, Psycopg 3 async, and synchronous Alembic | [Accepted integration design](../docs/decisions/0004-postgresql-integration.md). Pydantic is the API validation boundary. |
 | Operational state and cache | Redis | M1 authentication rate limiting. Fail closed for login and refresh on limiter outage. Optional caching and revocation acceleration follow justified use cases. |
@@ -150,7 +150,7 @@ Internal MCP tools may include search_knowledge_base, get_ticket_details, find_s
 | Security | Trivy, dependency scanning, CodeQL where available |
 | Release verification | Local formatting, linting, type checks, tests, build, and relevant security checks |
 
-Mock paid/external LLM calls in routine verification. Real-provider evaluations must be opt-in and quota bounded. Test unauthorized retrieval, prompt injection, invalid uploads, malformed model outputs, provider outages, tool approval/rejection and cross-user access. Cover critical behavior rather than chasing arbitrary coverage percentages. Do not report tests as passing unless actually run.
+Mock paid/external LLM calls in routine verification. Real-provider evaluations must be opt-in and quota bounded. Test unauthorized retrieval, prompt injection, invalid uploads, malformed model outputs, provider outages, tool approval/rejection and cross-user access. Cover critical behavior rather than chasing arbitrary coverage percentages. Use the [feature-level verification gate](rules/TESTING_STANDARDS.md) for applicable success, negative, security, actual integration, end-to-end, and regression evidence. Record only checks that actually ran.
 
 ## 10. Security and operational requirements
 

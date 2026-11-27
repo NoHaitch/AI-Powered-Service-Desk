@@ -1,6 +1,6 @@
 # FastAPI backend
 
-The M1 foundation exposes health checks, local Swagger UI, and a PostgreSQL schema for identity, refresh lineage, incidents, and audits. Application authentication and ticket endpoints remain pending. The React preview still uses synthetic data.
+The M1 backend authenticates provisioned users, rotates refresh credentials, and authorizes incident intake, tracking, and L1 triage. PostgreSQL owns identity, session lineage, incidents, and audits. Redis enforces authentication limits. See the [browser API contract](../docs/architecture/m0-authentication-design.md#api-contract).
 
 ## Local checks
 
@@ -57,3 +57,17 @@ All values use the `DESK_` prefix. Invalid types, empty required secrets, and va
 Revisit pool and probe budgets after representative measurements. The [PostgreSQL design](../docs/architecture/postgresql-integration.md) records the accepted transaction boundaries.
 
 Revision `0003_private_attachments` adds the [local storage foundation](../docs/architecture/content-storage.md). The provider is testable independently of the HTTP layer. Attachment routes remain gated on live authorization.
+
+### Authentication configuration
+
+The native health-only configuration omits authentication unless `DESK_AUTH_ENABLED=true`. Compose enables it and mounts required `DESK_AUTH_ACCESS_KEYS`, `DESK_AUTH_REFRESH_KEYS`, `DESK_AUTH_CSRF_KEYS`, and `DESK_AUTH_LIMITER_KEY` secret files. Configure the canonical `DESK_AUTH_ORIGIN` and exact `DESK_AUTH_PROXY_PEER` together. See [key formats and rotation](../docs/architecture/m1-authentication.md#secrets-and-rotation).
+
+| Settings | Defaults |
+| --- | --- |
+| `DESK_AUTH_ACCESS_SECONDS`, `DESK_AUTH_IDLE_SECONDS`, `DESK_AUTH_ABSOLUTE_SECONDS` | 600, 86,400, and 604,800 seconds. The access lifetime is shorter than the idle lifetime, and the idle lifetime is bounded by the absolute lifetime. |
+| `DESK_AUTH_HASH_WORKERS` | 2 concurrent Argon2id verifications per API worker. |
+| `DESK_AUTH_ADMISSION_WINDOW_SECONDS`, `DESK_AUTH_LOGIN_WINDOW_SECONDS`, `DESK_AUTH_SIGNAL_WINDOW_SECONDS`, `DESK_AUTH_RECOVERY_SECONDS` | 60, 300, 900, and 300 seconds. Recovery covers the longest enforced counter window. |
+| `DESK_AUTH_LOGIN_TOTAL`, `DESK_AUTH_LOGIN_SOURCE`, `DESK_AUTH_LOGIN_IDENTIFIER_SOURCE`, `DESK_AUTH_LOGIN_SIGNAL` | 120, 60, 5, and 15 in their respective accepted windows. The signal is advisory. |
+| `DESK_AUTH_REFRESH_TOTAL`, `DESK_AUTH_REFRESH_SOURCE`, `DESK_AUTH_REFRESH_FAMILY` | 300, 30, and 6 in the admission window. |
+
+Container settings for auth are distinct from migration credentials. `GET /api/health/auth` checks the durable limiter generation against Redis. Its degradation does not change PostgreSQL readiness or liveness.
