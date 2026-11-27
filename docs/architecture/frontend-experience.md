@@ -25,7 +25,7 @@ The service desk has three navigation areas built on React, Vite, Tailwind CSS, 
 
 ## Layout and design system
 
-Public and employee pages use a responsive top bar with account and theme controls. The management area uses the existing collapsible shadcn Sidebar and a top utility bar. Ticket details include a breadcrumb and an activity timeline.
+Public and employee pages use a responsive top bar with account and theme controls. The management area uses the existing collapsible shadcn Sidebar and a top utility bar. Ticket lists offer 10, 20, 50, or 100 rows per page on desktop and mobile, starting at 10. Changing the page size returns to page one. Ticket table headers are labels. The separate Sort dropdown controls order where offered, and L1 intake remains oldest first. Native select controls share an inset down chevron in both themes. Ticket details include a breadcrumb and an activity timeline. In-progress tickets show the assigned agent beside the ticket reference and date when an assignee is present.
 
 An app-wide theme provider follows the system's light or dark preference on first visit and tracks system changes until the user chooses a theme. The header button switches directly to the opposite theme. Its hover and keyboard-focus tooltip names the next action. The user's choice is stored in the browser and applied across routes and reloads.
 
@@ -59,7 +59,23 @@ The JSON is a candidate source for the future retrieval corpus. Review and impor
 
 ## Service catalog
 
-The catalog keeps a grid of cards on the neutral work surface. Use solid card fills, subtle borders, muted category badges, and blue request links. Request forms use the same card treatment and shared input palette.
+The catalog keeps a grid of cards on the neutral work surface. Use solid card fills, subtle borders, muted category badges, and blue request links. Each service page explains what the request covers, what to prepare, and where the submitted preview request appears. A Fill out request form link at the top jumps to the form below the details on the same page. Request forms use the same card treatment and shared input palette.
+
+Every service page explains when to use it, when to report an incident where relevant, and the information needed for review. A left arrow precedes the Back to service catalog link. A clock icon and the estimated processing time appear beside the service subtitle and above Open request on each catalog card. The estimate is in business days after required details and any approvals are in place. All forms require a request subject and a business justification. Additional fields vary by service.
+
+| Service | Required additional fields | Optional or conditional fields | Typical processing time |
+| --- | --- | --- | --- |
+| Software access | — | Access change, application role, needed-by date | 2–3 business days |
+| Shared drive access | Permission level | Folder owner or team, needed-by date | 1–2 business days |
+| IT equipment | Request type, delivery or pickup location | Needed-by date | 3–5 business days |
+| Mailing list access | Join or leave | — | 1–2 business days |
+| Work email | Mailbox change, department or team | Needed-by date | 2–3 business days |
+| VPN access | Device type, access duration | End date required for temporary access | 2–4 business days |
+| Shared mailbox access | Mailbox permission | Mailbox owner or team | 1–3 business days |
+| Work phone enrollment | Device ownership, setup type | — | 2–4 business days |
+| New starter IT setup | Start date, department or team, work arrangement | — | 5–7 business days |
+
+The preview validates required entries, allowed choices, and calendar dates before writing to tab-local storage. My Tickets shows the service-specific details submitted with a request. Older preview requests remain readable with their original fields. Dates give support planning context in the preview. The application does not submit requests to a fulfillment team or schedule provisioning.
 
 ## Knowledge articles
 
@@ -75,7 +91,7 @@ The source files can be reviewed for future RAG ingestion. Uploads, indexing, an
 
 ## Navigation, integration, and user flows
 
-Use browser links, lazy-loaded feature pages, and Vite's history fallback. Local release routing must preserve API forwarding before the SPA fallback. Revisit a declarative router when nested routes or retained navigation state justify the dependency.
+Use browser links, lazy-loaded feature pages, and Vite's history fallback. Show a centered spinner with an accessible loading label while a lazy route loads. Local release routing must preserve API forwarding before the SPA fallback. Revisit a declarative router when nested routes or retained navigation state justify the dependency.
 
 Synthetic personas select preview scope without collecting passwords. Ticket changes, replies, knowledge drafts, and notification state persist only in the current tab's session storage. Theme preference is browser-local. Fixture identifiers are for display. Ticket activity represents employee-facing or staff-facing events and remains separate from the future audit trail. Ticket projections share a list and detail experience while retaining separate incident and request models. Fixture visibility checks mirror intended UI scopes. Enforce session, resource, and mutation authorization in the API and verify durable audit records there.
 
